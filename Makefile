@@ -22,4 +22,4 @@ after-stage::
 	ldid -Sentitlements.plist $(THEOS_STAGING_DIR)/Applications/TrollDecrypt.app/TrollDecrypt
 	cp -a $(THEOS_STAGING_DIR)/Applications/* $(THEOS_STAGING_DIR)/Payload
 	mv $(THEOS_STAGING_DIR)/Payload .
-	zip -q -r TrollDecrypt.ipa Payload
+	zip -q -r TrollDecrypt.tipa Payload
