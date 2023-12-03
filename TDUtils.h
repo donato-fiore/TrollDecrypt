@@ -17,23 +17,6 @@
 - (BOOL)launchApplicationWithIdentifier:(id)arg1 suspended:(BOOL)arg2;
 @end
 
-@interface LSApplicationProxy : NSObject
-@property (readonly, nonatomic) NSString *bundleIdentifier; // ivar: _bundleIdentifier
-@property (readonly) NSString *shortVersionString;
-@property (readonly, nonatomic) NSString *canonicalExecutablePath;
-@property (getter=isLaunchProhibited) BOOL launchProhibited;
-@property (readonly, nonatomic) NSArray *appTags;
-@property(readonly) NSString * applicationType;
-- (NSString *)localizedName;
-+ (instancetype)applicationProxyForIdentifier:(NSString*)identifier;
-@end
-
-@interface LSApplicationWorkspace : NSObject
-+ (instancetype)defaultWorkspace;
-- (NSMutableArray<LSApplicationProxy *> *)allApplications;
-- (NSArray<LSApplicationProxy *> *)allInstalledApplications;
-@end
-
 @interface UIImage (Private)
 + (UIImage *)_applicationIconImageForBundleIdentifier:(NSString *)bundleIdentifier format:(NSUInteger)format scale:(CGFloat)scale;
 @end
@@ -42,6 +25,7 @@
 #define PROC_PIDPATHINFO_SIZE           (MAXPATHLEN)
 #define PROC_PIDPATHINFO_MAXSIZE        (4 * MAXPATHLEN)
 #define PROC_ALL_PIDS	            	1
+
 #ifndef DEBUG
 #   define NSLog(...) (void)0
 #endif
@@ -56,3 +40,6 @@ void decryptAppWithPID(pid_t pid);
 void bfinject_rocknroll(pid_t pid, NSString *appName, NSString *version);
 NSArray *decryptedFileList(void);
 NSString *docPath(void);
+void fetchLatestTrollDecryptVersion(void (^completionHandler)(NSString *version));
+void github_fetchLatedVersion(NSString *repo, void (^completionHandler)(NSString *latestVersion));
+NSString *trollDecryptVersion(void);

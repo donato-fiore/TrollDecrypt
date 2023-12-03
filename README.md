@@ -19,4 +19,5 @@ make package
 - [TrollDecryptor](https://github.com/wh1te4ever/TrollDecryptor) by wh1te4ever
 - [dumpdecrypted](https://github.com/stefanesser/dumpdecrypted) by Stefan Esser
 - [bfdecrypt](https://github.com/BishopFox/bfdecrypt) by BishopFox
+- [opa334](https://github.com/opa334) for some pieces of code
 - App Icon by super.user

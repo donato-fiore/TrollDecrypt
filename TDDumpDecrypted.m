@@ -238,7 +238,8 @@ int find_off_cryptid(const char *filePath) {
 	self.appVersion = appVersion;
 
 	[self setAppPath:[pathToBinary stringByDeletingLastPathComponent]];
-	[self setDocPath:[NSString stringWithFormat:@"%@/Documents", NSHomeDirectory()]];
+	// [self setDocPath:[NSString stringWithFormat:@"%@/Documents", NSHomeDirectory()]];
+	[self setDocPath:docPath()];
 
 	char *lastPartOfAppPath = strdup([[self appPath] UTF8String]);
 	lastPartOfAppPath = strrchr(lastPartOfAppPath, '/') + 1;

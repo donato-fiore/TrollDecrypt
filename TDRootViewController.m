@@ -18,6 +18,29 @@
     self.refreshControl = refreshControl;
 }
 
+- (void)viewDidAppear:(bool)animated {
+    [super viewDidAppear:animated];
+
+    fetchLatestTrollDecryptVersion(^(NSString *latestVersion) {
+        NSString *currentVersion = trollDecryptVersion();
+        NSComparisonResult result = [currentVersion compare:latestVersion options:NSNumericSearch];
+        NSLog(@"[trolldecrypter] Current version: %@, Latest version: %@", currentVersion, latestVersion);
+        if (result == NSOrderedAscending) {
+            dispatch_async(dispatch_get_main_queue(), ^{
+                UIAlertController *alert = [UIAlertController alertControllerWithTitle:@"Update Available" message:@"An update for TrollDecrypt is available." preferredStyle:UIAlertControllerStyleAlert];
+                UIAlertAction *cancel = [UIAlertAction actionWithTitle:@"Cancel" style:UIAlertActionStyleCancel handler:nil];
+                UIAlertAction *update = [UIAlertAction actionWithTitle:@"Download" style:UIAlertActionStyleDefault handler:^(UIAlertAction *action) {
+                    [[UIApplication sharedApplication] openURL:[NSURL URLWithString:[NSString stringWithFormat:@"https://github.com/donato-fiore/TrollDecrypt/releases/latest"]] options:@{} completionHandler:nil];
+                }];
+
+                [alert addAction:update];
+                [alert addAction:cancel];
+                [self presentViewController:alert animated:YES completion:nil];
+            });
+        }
+    });
+}
+
 - (void)openDocs:(id)sender {
     TDFileManagerViewController *fmVC = [[TDFileManagerViewController alloc] init];
     UINavigationController *navController = [[UINavigationController alloc] initWithRootViewController:fmVC];

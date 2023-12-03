@@ -1,5 +1,6 @@
 #import "TDUtils.h"
 #import "TDDumpDecrypted.h"
+#import "LSApplicationProxy+AltList.h"
 
 UIWindow *alertWindow = NULL;
 UIWindow *kw = NULL;
@@ -10,14 +11,17 @@ UIAlertController *errorController = NULL;
 
 NSArray *appList(void) {
     NSMutableArray *apps = [NSMutableArray array];
-    
-    for (LSApplicationProxy *app in [[LSApplicationWorkspace defaultWorkspace] allInstalledApplications]) {
-        if (![[app applicationType] isEqualToString:@"User"]) continue;
 
-        NSString *bundleID = app.bundleIdentifier;
-        NSString *name = [app localizedName];
-        NSString *version = app.shortVersionString;
-        NSString *executable = [app canonicalExecutablePath];
+    NSArray <LSApplicationProxy *> *installedApplications = [[LSApplicationWorkspace defaultWorkspace] atl_allInstalledApplications];
+    [installedApplications enumerateObjectsUsingBlock:^(LSApplicationProxy *proxy, NSUInteger idx, BOOL *stop) {
+        if (![proxy atl_isUserApplication]) return;
+
+        NSString *bundleID = [proxy atl_bundleIdentifier];
+        NSString *name = [proxy atl_nameToDisplay];
+        NSString *version = [proxy atl_shortVersionString];
+        NSString *executable = proxy.canonicalExecutablePath;
+
+        if (!bundleID || !name || !version || !executable) return;
 
         NSDictionary *item = @{
             @"bundleID":bundleID,
@@ -27,11 +31,11 @@ NSArray *appList(void) {
         };
 
         [apps addObject:item];
-    }
-    
+    }];
+
     NSSortDescriptor *descriptor = [[NSSortDescriptor alloc] initWithKey:@"name" ascending:YES selector:@selector(localizedCaseInsensitiveCompare:)];
     [apps sortUsingDescriptors:@[descriptor]];
-    
+
     [apps addObject:@{@"bundleID":@"", @"name":@"", @"version":@"", @"executable":@""}];
 
     return [apps copy];
@@ -42,42 +46,6 @@ NSUInteger iconFormat(void) {
 }
 
 NSArray *sysctl_ps(void) {
-    // int mib[4] = {CTL_KERN, KERN_PROC, KERN_PROC_ALL, 0};
-    // size_t miblen = 4;
-    // size_t size;
-    // int st = sysctl(mib, miblen, NULL, &size, NULL, 0);
-    // struct kinfo_proc * process = NULL;
-    // struct kinfo_proc * newprocess = NULL;
-    
-    // do {
-    //     size += size / 10;
-    //     newprocess = realloc(process, size);
-    //     if (!newprocess){
-    //         if (process){
-    //             free(process);
-    //         }
-    //         return nil;
-    //     }
-    //     process = newprocess;
-    //     st = sysctl(mib, miblen, process, &size, NULL, 0);
-    // } while (st == -1 && errno == ENOMEM);
-    
-    // if (st == 0) {
-    //     if (size % sizeof(struct kinfo_proc) == 0){
-    //         int nprocess = size / sizeof(struct kinfo_proc);
-    //         if (nprocess){
-    //             NSMutableArray * array = [[NSMutableArray alloc] init];
-    //             for (int i = nprocess - 1; i >= 0; i--){
-    //                 NSString *processID = [[NSString alloc] initWithFormat:@"%d", process[i].kp_proc.p_pid];
-    //                 NSString *processName = [[NSString alloc] initWithFormat:@"%s", process[i].kp_proc.p_comm];
-    //                 NSDictionary *dict = [[NSDictionary alloc] initWithObjects:[NSArray arrayWithObjects:processID, processName, nil] forKeys:[NSArray arrayWithObjects:@"pid", @"proc_name", nil]];
-    //                 [array addObject:dict];
-    //             }
-    //             free(process);
-    //             return array; 
-    //         }
-    //     }
-    // }
     NSMutableArray *array = [[NSMutableArray alloc] init];
 
     int numberOfProcesses = proc_listpids(PROC_ALL_PIDS, 0, NULL, 0);
@@ -246,6 +214,7 @@ void bfinject_rocknroll(pid_t pid, NSString *appName, NSString *version) {
 
 NSArray *decryptedFileList(void) {
     NSMutableArray *files = [NSMutableArray array];
+    NSMutableArray *fileNames = [NSMutableArray array];
 
     // iterate through all files in the Documents directory
     NSFileManager *fileManager = [NSFileManager defaultManager];
@@ -257,7 +226,7 @@ NSArray *decryptedFileList(void) {
             NSString *filePath = [[docPath() stringByAppendingPathComponent:file] stringByStandardizingPath];
 
             NSDictionary *fileAttributes = [fileManager attributesOfItemAtPath:filePath error:nil];
-            NSDate *modificationDate = [fileAttributes fileModificationDate];
+            NSDate *modificationDate = fileAttributes[NSFileModificationDate];
 
             NSDictionary *fileInfo = @{@"fileName": file, @"modificationDate": modificationDate};
             [files addObject:fileInfo];
@@ -271,11 +240,22 @@ NSArray *decryptedFileList(void) {
         return [date2 compare:date1];
     }];
 
-    return [sortedFiles valueForKey:@"fileName"];
+    // Get the file names from the sorted array
+    for (NSDictionary *fileInfo in sortedFiles) {
+        [fileNames addObject:[fileInfo objectForKey:@"fileName"]];
+    }
+
+    return [fileNames copy];
 }
 
 NSString *docPath(void) {
-    return [NSHomeDirectory() stringByAppendingPathComponent:@"Documents"];
+    NSError * error = nil;
+    [[NSFileManager defaultManager] createDirectoryAtPath:@"/var/mobile/Library/TrollDecrypt/decrypted" withIntermediateDirectories:YES attributes:nil error:&error];
+    if (error != nil) {
+        NSLog(@"[trolldecrypt] error creating directory: %@", error);
+    }
+
+    return @"/var/mobile/Library/TrollDecrypt/decrypted";
 }
 
 void decryptAppWithPID(pid_t pid) {
@@ -341,17 +321,11 @@ void decryptAppWithPID(pid_t pid) {
 
     NSLog(@"[trolldecrypt] app: %@", app);
 
-    NSString *name = [app localizedName];
-    NSString *version = app.shortVersionString;
-    if (!version) version = @"1.0";
-
-    NSString *exec = [app canonicalExecutablePath];
-
     NSDictionary *appInfo = @{
         @"bundleID":bundleID,
-        @"name":name,
-        @"version":version,
-        @"executable":exec
+        @"name":[app atl_nameToDisplay],
+        @"version":[app atl_shortVersionString],
+        @"executable":executable
     };
 
     NSLog(@"[trolldecrypt] appInfo: %@", appInfo);
@@ -369,4 +343,33 @@ void decryptAppWithPID(pid_t pid) {
         
         [root presentViewController:alert animated:YES completion:nil];
     });
+}
+
+void github_fetchLatedVersion(NSString *repo, void (^completionHandler)(NSString *latestVersion)) {
+    NSString *urlString = [NSString stringWithFormat:@"https://api.github.com/repos/%@/releases/latest", repo];
+    NSURL *url = [NSURL URLWithString:urlString];
+
+    NSURLSessionDataTask *task = [[NSURLSession sharedSession] dataTaskWithURL:url completionHandler:^(NSData *data, NSURLResponse *response, NSError *error) {
+        if (!error) {
+            if ([response isKindOfClass:[NSHTTPURLResponse class]]) {
+                NSError *jsonError;
+                NSDictionary *json = [NSJSONSerialization JSONObjectWithData:data options:0 error:&jsonError];
+
+                if (!jsonError) {
+                    NSString *version = [json[@"tag_name"] stringByReplacingOccurrencesOfString:@"v" withString:@""];
+                    completionHandler(version);
+                }
+            }
+        }
+    }];
+
+    [task resume];
+}
+
+void fetchLatestTrollDecryptVersion(void (^completionHandler)(NSString *version)) {
+    github_fetchLatedVersion(@"donato-fiore/TrollDecrypt", completionHandler);
+}
+
+NSString *trollDecryptVersion(void) {
+    return [NSBundle.mainBundle objectForInfoDictionaryKey:@"CFBundleVersion"];
 }

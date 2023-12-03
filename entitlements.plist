@@ -34,5 +34,17 @@
 	<true/>
 	<key>com.apple.springboard.launchapplications</key>
 	<true/>
+	<key>com.apple.security.exception.iokit-user-client-class</key>
+	<array>
+		<string>IOUserClient</string>
+		<string>IOUserServer</string>
+		<string>RootDomainUserClient</string>
+	</array>
+	<key>com.apple.security.iokit-user-client-class</key>
+	<array>
+		<string>IOUserClient</string>
+		<string>IOUserServer</string>
+		<string>RootDomainUserClient</string>
+	</array>
 </dict>
 </plist>

@@ -1,6 +1,6 @@
 Package: com.fiore.trolldecrypt
 Name: TrollDecrypt
-Version: 0.0.1
+Version: 1.1
 Architecture: iphoneos-arm
 Description: An awesome application!
 Maintainer: fiore

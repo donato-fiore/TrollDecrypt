@@ -10,7 +10,10 @@
 		<dict>
 			<key>CFBundleIconFiles</key>
 			<array>
-				<string>AppIcon60x60</string>
+				<string>AppIcon-29</string>
+				<string>AppIcon-40</string>
+				<string>AppIcon-57</string>
+				<string>AppIcon-60</string>
 			</array>
 			<key>UIPrerenderedIcon</key>
 			<true/>
@@ -22,8 +25,13 @@
 		<dict>
 			<key>CFBundleIconFiles</key>
 			<array>
-				<string>AppIcon60x60</string>
-				<string>AppIcon76x76~ipad</string>
+				<string>AppIcon-29</string>
+				<string>AppIcon-40</string>
+				<string>AppIcon-57</string>
+				<string>AppIcon-60</string>
+				<string>AppIcon-50</string>
+				<string>AppIcon-72</string>
+				<string>AppIcon-76</string>
 			</array>
 			<key>UIPrerenderedIcon</key>
 			<true/>
@@ -42,7 +50,7 @@
 		<string>iPhoneOS</string>
 	</array>
 	<key>CFBundleVersion</key>
-	<string>1.0</string>
+	<string>1.1</string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
 	<key>UIDeviceFamily</key>
