@@ -193,14 +193,24 @@ void bfinject_rocknroll(pid_t pid, NSString *appName, NSString *version) {
             [alertController dismissViewControllerAnimated:NO completion:nil];
 
             doneController = [UIAlertController alertControllerWithTitle:@"Decryption Complete!" message:[NSString stringWithFormat:@"IPA file saved to:\n%@", [dd IPAPath]] preferredStyle:UIAlertControllerStyleAlert];
+
             UIAlertAction *okAction = [UIAlertAction actionWithTitle:NSLocalizedString(@"Ok", @"Ok") style:UIAlertActionStyleDefault handler:^(UIAlertAction *action) {
-                NSLog(@"[trolldecrypt] Ok action");
-                [doneController dismissViewControllerAnimated:NO completion:nil];
                 [kw removeFromSuperview];
                 kw.hidden = YES;
             }];
-
             [doneController addAction:okAction];
+
+            if ([[UIApplication sharedApplication] canOpenURL:[NSURL URLWithString:@"filza://"]]) {
+                UIAlertAction *openAction = [UIAlertAction actionWithTitle:@"Show in Filza" style:UIAlertActionStyleDefault handler:^(UIAlertAction *action) {
+                    [kw removeFromSuperview];
+                    kw.hidden = YES;
+
+                    NSString *urlString = [NSString stringWithFormat:@"filza://view%@", [dd IPAPath]];
+                    [[UIApplication sharedApplication] openURL:[NSURL URLWithString:urlString] options:@{} completionHandler:nil];
+                }];
+                [doneController addAction:openAction];
+            }
+
             [root presentViewController:doneController animated:YES completion:nil];
         }); // dispatch on main
                     
