@@ -10,6 +10,10 @@
     self.fileList = decryptedFileList();
 
     self.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc] initWithTitle:@"Done" style:UIBarButtonItemStyleDone target:self action:@selector(done)];
+
+    if (self.fileList.count == 0) {
+        [self addNoFilesView];
+    }
 }
 
 - (void)refresh {
@@ -45,7 +49,6 @@
 
     NSNumber *fileSize = attributes[NSFileSize];
 
-
     cell.textLabel.text = self.fileList[indexPath.row];
     cell.detailTextLabel.text = [dateFormatter stringFromDate:date];
     cell.detailTextLabel.textColor = [UIColor systemGray2Color];
@@ -59,7 +62,6 @@
     label.textAlignment = NSTextAlignmentCenter;
     cell.accessoryView = label;
 
-
     return cell;
 }
 
@@ -72,14 +74,20 @@
 }
 
 - (UISwipeActionsConfiguration *)tableView:(UITableView *)tableView trailingSwipeActionsConfigurationForRowAtIndexPath:(NSIndexPath *)indexPath {
-    UIContextualAction *deleteAction = [UIContextualAction contextualActionWithStyle:UIContextualActionStyleDestructive title:@"Delete" handler:^(UIContextualAction *action, UIView *sourceView, void (^completionHandler)(BOOL)) {
-        NSString *file = self.fileList[indexPath.row];
-        NSString *path = [docPath() stringByAppendingPathComponent:file];
-        [[NSFileManager defaultManager] removeItemAtPath:path error:nil];
-        [self refresh];
-    }];
+    UIContextualAction *deleteAction = [UIContextualAction contextualActionWithStyle:UIContextualActionStyleDestructive
+                                                                               title:@"Delete"
+                                                                             handler:^(UIContextualAction *action, __kindof UIView *sourceView, void (^completionHandler)(BOOL)) {
+                                                                                 NSString *file = self.fileList[indexPath.row];
+                                                                                 NSString *path = [docPath() stringByAppendingPathComponent:file];
+                                                                                 [[NSFileManager defaultManager] removeItemAtPath:path error:nil];
+                                                                                 [self refresh];
 
-    UISwipeActionsConfiguration *swipeActions = [UISwipeActionsConfiguration configurationWithActions:@[deleteAction]];
+                                                                                 if (self.fileList.count == 0) {
+                                                                                     [self addNoFilesView];
+                                                                                 }
+                                                                             }];
+
+    UISwipeActionsConfiguration *swipeActions = [UISwipeActionsConfiguration configurationWithActions:@[ deleteAction ]];
     return swipeActions;
 }
 
@@ -88,10 +96,50 @@
     NSString *path = [docPath() stringByAppendingPathComponent:file];
     NSURL *url = [NSURL fileURLWithPath:path];
 
-    UIActivityViewController *activityViewController = [[UIActivityViewController alloc] initWithActivityItems:@[url] applicationActivities:nil];
+    UIActivityViewController *activityViewController = [[UIActivityViewController alloc] initWithActivityItems:@[ url ] applicationActivities:nil];
     [self presentViewController:activityViewController animated:YES completion:nil];
 
     [tableView deselectRowAtIndexPath:indexPath animated:YES];
+}
+
+- (void)addNoFilesView {
+    UIView *view = [[UIView alloc] init];
+    view.translatesAutoresizingMaskIntoConstraints = NO;
+    [self.tableView addSubview:view];
+    [NSLayoutConstraint activateConstraints:@[
+        [view.centerXAnchor constraintEqualToAnchor:self.tableView.centerXAnchor],
+        [view.centerYAnchor constraintEqualToAnchor:self.tableView.centerYAnchor
+                                           constant:-(self.navigationController.navigationBar.frame.size.height + 25)],
+        [view.widthAnchor constraintEqualToConstant:200],
+        [view.heightAnchor constraintEqualToConstant:200]
+    ]];
+
+    UIImageView *docView = [[UIImageView alloc] initWithImage:[UIImage systemImageNamed:@"doc"]];
+    docView.tintColor = [UIColor systemGray2Color];
+    docView.translatesAutoresizingMaskIntoConstraints = NO;
+    [view addSubview:docView];
+    [NSLayoutConstraint activateConstraints:@[
+        [docView.centerXAnchor constraintEqualToAnchor:view.centerXAnchor],
+        [docView.centerYAnchor constraintEqualToAnchor:view.centerYAnchor],
+        [docView.widthAnchor constraintEqualToConstant:50],
+        [docView.heightAnchor constraintEqualToConstant:50]
+    ]];
+
+    UILabel *label = [[UILabel alloc] init];
+    label.text = @"No files.";
+    label.font = [UIFont systemFontOfSize:24.0f weight:UIFontWeightMedium];
+    [view addSubview:label];
+    label.translatesAutoresizingMaskIntoConstraints = NO;
+    label.textAlignment = NSTextAlignmentCenter;
+    label.textColor = [UIColor systemGray2Color];
+    [NSLayoutConstraint activateConstraints:@[
+        [label.centerXAnchor constraintEqualToAnchor:view.centerXAnchor],
+        [label.leadingAnchor constraintEqualToAnchor:view.leadingAnchor],
+        [label.trailingAnchor constraintEqualToAnchor:view.trailingAnchor],
+        [label.heightAnchor constraintEqualToConstant:28],
+        [label.topAnchor constraintEqualToAnchor:docView.bottomAnchor
+                                        constant:10]
+    ]];
 }
 
 @end

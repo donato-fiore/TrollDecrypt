@@ -1,6 +1,6 @@
 #import "TDUtils.h"
-#import "TDDumpDecrypted.h"
 #import "LSApplicationProxy+AltList.h"
+#import "TDDumpDecrypted.h"
 
 UIWindow *alertWindow = NULL;
 UIWindow *kw = NULL;
@@ -12,7 +12,7 @@ UIAlertController *errorController = NULL;
 NSArray *appList(void) {
     NSMutableArray *apps = [NSMutableArray array];
 
-    NSArray <LSApplicationProxy *> *installedApplications = [[LSApplicationWorkspace defaultWorkspace] atl_allInstalledApplications];
+    NSArray<LSApplicationProxy *> *installedApplications = [[LSApplicationWorkspace defaultWorkspace] atl_allInstalledApplications];
     [installedApplications enumerateObjectsUsingBlock:^(LSApplicationProxy *proxy, NSUInteger idx, BOOL *stop) {
         if (![proxy atl_isUserApplication]) return;
 
@@ -24,19 +24,19 @@ NSArray *appList(void) {
         if (!bundleID || !name || !version || !executable) return;
 
         NSDictionary *item = @{
-            @"bundleID":bundleID,
-            @"name":name,
-            @"version":version,
-            @"executable":executable
+            @"bundleID" : bundleID,
+            @"name" : name,
+            @"version" : version,
+            @"executable" : executable
         };
 
         [apps addObject:item];
     }];
 
     NSSortDescriptor *descriptor = [[NSSortDescriptor alloc] initWithKey:@"name" ascending:YES selector:@selector(localizedCaseInsensitiveCompare:)];
-    [apps sortUsingDescriptors:@[descriptor]];
+    [apps sortUsingDescriptors:@[ descriptor ]];
 
-    [apps addObject:@{@"bundleID":@"", @"name":@"", @"version":@"", @"executable":@""}];
+    [apps addObject:@{@"bundleID" : @"", @"name" : @"", @"version" : @"", @"executable" : @""}];
 
     return [apps copy];
 }
@@ -53,7 +53,9 @@ NSArray *sysctl_ps(void) {
     bzero(pids, sizeof(pids));
     proc_listpids(PROC_ALL_PIDS, 0, pids, sizeof(pids));
     for (int i = 0; i < numberOfProcesses; ++i) {
-        if (pids[i] == 0) { continue; }
+        if (pids[i] == 0) {
+            continue;
+        }
         char pathBuffer[PROC_PIDPATHINFO_MAXSIZE];
         bzero(pathBuffer, PROC_PIDPATHINFO_MAXSIZE);
         proc_pidpath(pids[i], pathBuffer, sizeof(pathBuffer));
@@ -62,7 +64,7 @@ NSArray *sysctl_ps(void) {
             NSString *processID = [[NSString alloc] initWithFormat:@"%d", pids[i]];
             NSString *processName = [[NSString stringWithUTF8String:pathBuffer] lastPathComponent];
             NSDictionary *dict = [[NSDictionary alloc] initWithObjects:[NSArray arrayWithObjects:processID, processName, nil] forKeys:[NSArray arrayWithObjects:@"pid", @"proc_name", nil]];
-            
+
             [array addObject:dict];
         }
     }
@@ -72,15 +74,15 @@ NSArray *sysctl_ps(void) {
 
 void decryptApp(NSDictionary *app) {
     dispatch_async(dispatch_get_main_queue(), ^{
-        alertWindow = [[UIWindow alloc] initWithFrame: [UIScreen mainScreen].bounds];
+        alertWindow = [[UIWindow alloc] initWithFrame:[UIScreen mainScreen].bounds];
         alertWindow.rootViewController = [UIViewController new];
         alertWindow.windowLevel = UIWindowLevelAlert + 1;
         [alertWindow makeKeyAndVisible];
-        
+
         // Show a "Decrypting!" alert on the device and block the UI
-            
+
         kw = alertWindow;
-        if([kw respondsToSelector:@selector(topmostPresentedViewController)])
+        if ([kw respondsToSelector:@selector(topmostPresentedViewController)])
             root = [kw performSelector:@selector(topmostPresentedViewController)];
         else
             root = [kw rootViewController];
@@ -123,12 +125,14 @@ void decryptApp(NSDictionary *app) {
                 NSLog(@"[trolldecrypt] failed to get pid for binary name: %@", binaryName);
 
                 errorController = [UIAlertController alertControllerWithTitle:@"Error: -1" message:[NSString stringWithFormat:@"Failed to get PID for binary name: %@", binaryName] preferredStyle:UIAlertControllerStyleAlert];
-                UIAlertAction *okAction = [UIAlertAction actionWithTitle:NSLocalizedString(@"Ok", @"Ok") style:UIAlertActionStyleDefault handler:^(UIAlertAction *action) {
-                    NSLog(@"[trolldecrypt] Ok action");
-                    [errorController dismissViewControllerAnimated:NO completion:nil];
-                    [kw removeFromSuperview];
-                    kw.hidden = YES;
-                }];
+                UIAlertAction *okAction = [UIAlertAction actionWithTitle:NSLocalizedString(@"Ok", @"Ok")
+                                                                   style:UIAlertActionStyleDefault
+                                                                 handler:^(UIAlertAction *action) {
+                                                                     NSLog(@"[trolldecrypt] Ok action");
+                                                                     [errorController dismissViewControllerAnimated:NO completion:nil];
+                                                                     [kw removeFromSuperview];
+                                                                     kw.hidden = YES;
+                                                                 }];
 
                 [errorController addAction:okAction];
                 [root presentViewController:errorController animated:YES completion:nil];
@@ -145,19 +149,18 @@ void decryptApp(NSDictionary *app) {
 
 void bfinject_rocknroll(pid_t pid, NSString *appName, NSString *version) {
     NSLog(@"[trolldecrypt] Spawning thread to do decryption in the background...");
-    
+
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
         NSLog(@"[trolldecrypt] Inside decryption thread");
 
-		char pathbuf[PROC_PIDPATHINFO_MAXSIZE];
-    	// int proc_pidpath(pid, pathbuf, sizeof(pathbuf));
+        char pathbuf[PROC_PIDPATHINFO_MAXSIZE];
+        // int proc_pidpath(pid, pathbuf, sizeof(pathbuf));
         proc_pidpath(pid, pathbuf, sizeof(pathbuf));
-		const char *fullPathStr = pathbuf;
-
+        const char *fullPathStr = pathbuf;
 
         NSLog(@"[trolldecrypt] fullPathStr: %s", fullPathStr);
         DumpDecrypted *dd = [[DumpDecrypted alloc] initWithPathToBinary:[NSString stringWithUTF8String:fullPathStr] appName:appName appVersion:version];
-        if(!dd) {
+        if (!dd) {
             NSLog(@"[trolldecrypt] ERROR: failed to get DumpDecrypted instance");
             return;
         }
@@ -165,26 +168,26 @@ void bfinject_rocknroll(pid_t pid, NSString *appName, NSString *version) {
         NSLog(@"[trolldecrypt] Full path to app: %s   ///   IPA File: %@", fullPathStr, [dd IPAPath]);
 
         dispatch_async(dispatch_get_main_queue(), ^{
-            alertWindow = [[UIWindow alloc] initWithFrame: [UIScreen mainScreen].bounds];
+            alertWindow = [[UIWindow alloc] initWithFrame:[UIScreen mainScreen].bounds];
             alertWindow.rootViewController = [UIViewController new];
             alertWindow.windowLevel = UIWindowLevelAlert + 1;
             [alertWindow makeKeyAndVisible];
-            
+
             // Show a "Decrypting!" alert on the device and block the UI
             alertController = [UIAlertController
                 alertControllerWithTitle:@"Decrypting"
-                message:@"Please wait, this will take a few seconds..."
-                preferredStyle:UIAlertControllerStyleAlert];
-                
+                                 message:@"Please wait, this will take a few seconds..."
+                          preferredStyle:UIAlertControllerStyleAlert];
+
             kw = alertWindow;
-            if([kw respondsToSelector:@selector(topmostPresentedViewController)])
+            if ([kw respondsToSelector:@selector(topmostPresentedViewController)])
                 root = [kw performSelector:@selector(topmostPresentedViewController)];
             else
                 root = [kw rootViewController];
             root.modalPresentationStyle = UIModalPresentationFullScreen;
             [root presentViewController:alertController animated:YES completion:nil];
         });
-        
+
         // Do the decryption
         [dd createIPAFile:pid];
 
@@ -194,31 +197,35 @@ void bfinject_rocknroll(pid_t pid, NSString *appName, NSString *version) {
 
             doneController = [UIAlertController alertControllerWithTitle:@"Decryption Complete!" message:[NSString stringWithFormat:@"IPA file saved to:\n%@", [dd IPAPath]] preferredStyle:UIAlertControllerStyleAlert];
 
-            UIAlertAction *okAction = [UIAlertAction actionWithTitle:NSLocalizedString(@"Ok", @"Ok") style:UIAlertActionStyleDefault handler:^(UIAlertAction *action) {
-                [kw removeFromSuperview];
-                kw.hidden = YES;
-            }];
+            UIAlertAction *okAction = [UIAlertAction actionWithTitle:NSLocalizedString(@"Ok", @"Ok")
+                                                               style:UIAlertActionStyleDefault
+                                                             handler:^(UIAlertAction *action) {
+                                                                 [kw removeFromSuperview];
+                                                                 kw.hidden = YES;
+                                                             }];
             [doneController addAction:okAction];
 
             if ([[UIApplication sharedApplication] canOpenURL:[NSURL URLWithString:@"filza://"]]) {
-                UIAlertAction *openAction = [UIAlertAction actionWithTitle:@"Show in Filza" style:UIAlertActionStyleDefault handler:^(UIAlertAction *action) {
-                    [kw removeFromSuperview];
-                    kw.hidden = YES;
+                UIAlertAction *openAction = [UIAlertAction actionWithTitle:@"Show in Filza"
+                                                                     style:UIAlertActionStyleDefault
+                                                                   handler:^(UIAlertAction *action) {
+                                                                       [kw removeFromSuperview];
+                                                                       kw.hidden = YES;
 
-                    NSString *urlString = [NSString stringWithFormat:@"filza://view%@", [dd IPAPath]];
-                    [[UIApplication sharedApplication] openURL:[NSURL URLWithString:urlString] options:@{} completionHandler:nil];
-                }];
+                                                                       NSString *urlString = [NSString stringWithFormat:@"filza://view%@", [dd IPAPath]];
+                                                                       [[UIApplication sharedApplication] openURL:[NSURL URLWithString:urlString] options:@{} completionHandler:nil];
+                                                                   }];
                 [doneController addAction:openAction];
             }
 
             [root presentViewController:doneController animated:YES completion:nil];
-        }); // dispatch on main
-                    
+        });  // dispatch on main
+
         NSLog(@"[trolldecrypt] Over and out.");
-        while(1)
+        while (1)
             sleep(9999999);
-    }); // dispatch in background
-    
+    });  // dispatch in background
+
     NSLog(@"[trolldecrypt] All done, exiting constructor.");
 }
 
@@ -238,7 +245,7 @@ NSArray *decryptedFileList(void) {
             NSDictionary *fileAttributes = [fileManager attributesOfItemAtPath:filePath error:nil];
             NSDate *modificationDate = fileAttributes[NSFileModificationDate];
 
-            NSDictionary *fileInfo = @{@"fileName": file, @"modificationDate": modificationDate};
+            NSDictionary *fileInfo = @{@"fileName" : file, @"modificationDate" : modificationDate};
             [files addObject:fileInfo];
         }
     }
@@ -259,7 +266,7 @@ NSArray *decryptedFileList(void) {
 }
 
 NSString *docPath(void) {
-    NSError * error = nil;
+    NSError *error = nil;
     [[NSFileManager defaultManager] createDirectoryAtPath:@"/var/mobile/Library/TrollDecrypt/decrypted" withIntermediateDirectories:YES attributes:nil error:&error];
     if (error != nil) {
         NSLog(@"[trolldecrypt] error creating directory: %@", error);
@@ -275,15 +282,15 @@ void decryptAppWithPID(pid_t pid) {
     NSString *error = nil;
 
     dispatch_async(dispatch_get_main_queue(), ^{
-        alertWindow = [[UIWindow alloc] initWithFrame: [UIScreen mainScreen].bounds];
+        alertWindow = [[UIWindow alloc] initWithFrame:[UIScreen mainScreen].bounds];
         alertWindow.rootViewController = [UIViewController new];
         alertWindow.windowLevel = UIWindowLevelAlert + 1;
         [alertWindow makeKeyAndVisible];
-        
+
         // Show a "Decrypting!" alert on the device and block the UI
-            
+
         kw = alertWindow;
-        if([kw respondsToSelector:@selector(topmostPresentedViewController)])
+        if ([kw respondsToSelector:@selector(topmostPresentedViewController)])
             root = [kw performSelector:@selector(topmostPresentedViewController)];
         else
             root = [kw rootViewController];
@@ -317,12 +324,14 @@ void decryptAppWithPID(pid_t pid) {
             NSLog(@"[trolldecrypt] failed to get bundleid for pid: %d", pid);
 
             errorController = [UIAlertController alertControllerWithTitle:error message:message preferredStyle:UIAlertControllerStyleAlert];
-            UIAlertAction *okAction = [UIAlertAction actionWithTitle:NSLocalizedString(@"Ok", @"Ok") style:UIAlertActionStyleDefault handler:^(UIAlertAction *action) {
-                NSLog(@"[trolldecrypt] Ok action");
-                [errorController dismissViewControllerAnimated:NO completion:nil];
-                [kw removeFromSuperview];
-                kw.hidden = YES;
-            }];
+            UIAlertAction *okAction = [UIAlertAction actionWithTitle:NSLocalizedString(@"Ok", @"Ok")
+                                                               style:UIAlertActionStyleDefault
+                                                             handler:^(UIAlertAction *action) {
+                                                                 NSLog(@"[trolldecrypt] Ok action");
+                                                                 [errorController dismissViewControllerAnimated:NO completion:nil];
+                                                                 [kw removeFromSuperview];
+                                                                 kw.hidden = YES;
+                                                             }];
 
             [errorController addAction:okAction];
             [root presentViewController:errorController animated:YES completion:nil];
@@ -332,10 +341,10 @@ void decryptAppWithPID(pid_t pid) {
     NSLog(@"[trolldecrypt] app: %@", app);
 
     NSDictionary *appInfo = @{
-        @"bundleID":bundleID,
-        @"name":[app atl_nameToDisplay],
-        @"version":[app atl_shortVersionString],
-        @"executable":executable
+        @"bundleID" : bundleID,
+        @"name" : [app atl_nameToDisplay],
+        @"version" : [app atl_shortVersionString],
+        @"executable" : executable
     };
 
     NSLog(@"[trolldecrypt] appInfo: %@", appInfo);
@@ -344,13 +353,15 @@ void decryptAppWithPID(pid_t pid) {
         [alertController dismissViewControllerAnimated:NO completion:nil];
         UIAlertController *alert = [UIAlertController alertControllerWithTitle:@"Decrypt" message:[NSString stringWithFormat:@"Decrypt %@?", appInfo[@"name"]] preferredStyle:UIAlertControllerStyleAlert];
         UIAlertAction *cancel = [UIAlertAction actionWithTitle:@"Cancel" style:UIAlertActionStyleCancel handler:nil];
-        UIAlertAction *decrypt = [UIAlertAction actionWithTitle:@"Yes" style:UIAlertActionStyleDefault handler:^(UIAlertAction *action) {
-            decryptApp(appInfo);
-        }];
+        UIAlertAction *decrypt = [UIAlertAction actionWithTitle:@"Yes"
+                                                          style:UIAlertActionStyleDefault
+                                                        handler:^(UIAlertAction *action) {
+                                                            decryptApp(appInfo);
+                                                        }];
 
         [alert addAction:decrypt];
         [alert addAction:cancel];
-        
+
         [root presentViewController:alert animated:YES completion:nil];
     });
 }
@@ -359,19 +370,20 @@ void github_fetchLatedVersion(NSString *repo, void (^completionHandler)(NSString
     NSString *urlString = [NSString stringWithFormat:@"https://api.github.com/repos/%@/releases/latest", repo];
     NSURL *url = [NSURL URLWithString:urlString];
 
-    NSURLSessionDataTask *task = [[NSURLSession sharedSession] dataTaskWithURL:url completionHandler:^(NSData *data, NSURLResponse *response, NSError *error) {
-        if (!error) {
-            if ([response isKindOfClass:[NSHTTPURLResponse class]]) {
-                NSError *jsonError;
-                NSDictionary *json = [NSJSONSerialization JSONObjectWithData:data options:0 error:&jsonError];
+    NSURLSessionDataTask *task = [[NSURLSession sharedSession] dataTaskWithURL:url
+                                                             completionHandler:^(NSData *data, NSURLResponse *response, NSError *error) {
+                                                                 if (!error) {
+                                                                     if ([response isKindOfClass:[NSHTTPURLResponse class]]) {
+                                                                         NSError *jsonError;
+                                                                         NSDictionary *json = [NSJSONSerialization JSONObjectWithData:data options:0 error:&jsonError];
 
-                if (!jsonError) {
-                    NSString *version = [json[@"tag_name"] stringByReplacingOccurrencesOfString:@"v" withString:@""];
-                    completionHandler(version);
-                }
-            }
-        }
-    }];
+                                                                         if (!jsonError) {
+                                                                             NSString *version = [json[@"tag_name"] stringByReplacingOccurrencesOfString:@"v" withString:@""];
+                                                                             completionHandler(version);
+                                                                         }
+                                                                     }
+                                                                 }
+                                                             }];
 
     [task resume];
 }

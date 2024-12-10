@@ -2,16 +2,16 @@
 #import <MobileCoreServices/LSApplicationWorkspace.h>
 
 @interface LSApplicationRecord : NSObject
-@property (nonatomic,readonly) NSArray* appTags; // 'hidden'
-@property (getter=isLaunchProhibited,readonly) BOOL launchProhibited;
+@property (nonatomic, readonly) NSArray* appTags;  // 'hidden'
+@property (getter=isLaunchProhibited, readonly) BOOL launchProhibited;
 @end
 
 @interface LSApplicationProxy (Additions)
-@property (readonly, nonatomic) NSString *shortVersionString;
-@property (nonatomic,readonly) NSString* localizedName;
-@property (nonatomic,readonly) NSString* applicationType; // (User/System)
-@property (nonatomic,readonly) NSArray* appTags; // 'hidden'
-@property (getter=isLaunchProhibited,nonatomic,readonly) BOOL launchProhibited;
+@property (readonly, nonatomic) NSString* shortVersionString;
+@property (nonatomic, readonly) NSString* localizedName;
+@property (nonatomic, readonly) NSString* applicationType;  // (User/System)
+@property (nonatomic, readonly) NSArray* appTags;           // 'hidden'
+@property (getter=isLaunchProhibited, nonatomic, readonly) BOOL launchProhibited;
 + (instancetype)applicationProxyForIdentifier:(NSString*)identifier;
 - (LSApplicationRecord*)correspondingApplicationRecord;
 @end
@@ -29,7 +29,7 @@
 - (NSString*)atl_fastDisplayName;
 - (NSString*)atl_nameToDisplay;
 - (NSString*)atl_shortVersionString;
-@property (nonatomic,readonly) NSString* atl_bundleIdentifier;
+@property (nonatomic, readonly) NSString* atl_bundleIdentifier;
 @end
 
 @interface LSApplicationWorkspace (AltList)

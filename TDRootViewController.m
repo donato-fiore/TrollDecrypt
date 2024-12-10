@@ -9,7 +9,7 @@
 
     self.apps = appList();
     self.title = @"TrollDecrypt";
-	self.navigationController.navigationBar.prefersLargeTitles = YES;
+    self.navigationController.navigationBar.prefersLargeTitles = YES;
     self.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc] initWithImage:[UIImage systemImageNamed:@"info.circle"] style:UIBarButtonItemStylePlain target:self action:@selector(about:)];
     self.navigationItem.leftBarButtonItem = [[UIBarButtonItem alloc] initWithImage:[UIImage systemImageNamed:@"folder"] style:UIBarButtonItemStylePlain target:self action:@selector(openDocs:)];
 
@@ -29,9 +29,11 @@
             dispatch_async(dispatch_get_main_queue(), ^{
                 UIAlertController *alert = [UIAlertController alertControllerWithTitle:@"Update Available" message:@"An update for TrollDecrypt is available." preferredStyle:UIAlertControllerStyleAlert];
                 UIAlertAction *cancel = [UIAlertAction actionWithTitle:@"Cancel" style:UIAlertActionStyleCancel handler:nil];
-                UIAlertAction *update = [UIAlertAction actionWithTitle:@"Download" style:UIAlertActionStyleDefault handler:^(UIAlertAction *action) {
-                    [[UIApplication sharedApplication] openURL:[NSURL URLWithString:[NSString stringWithFormat:@"https://github.com/donato-fiore/TrollDecrypt/releases/latest"]] options:@{} completionHandler:nil];
-                }];
+                UIAlertAction *update = [UIAlertAction actionWithTitle:@"Download"
+                                                                 style:UIAlertActionStyleDefault
+                                                               handler:^(UIAlertAction *action) {
+                                                                   [[UIApplication sharedApplication] openURL:[NSURL URLWithString:[NSString stringWithFormat:@"https://github.com/donato-fiore/TrollDecrypt/releases/latest"]] options:@{} completionHandler:nil];
+                                                               }];
 
                 [alert addAction:update];
                 [alert addAction:cancel];
@@ -63,7 +65,7 @@
     return 1;
 }
 
-- (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section { 
+- (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
     return self.apps.count;
 }
 
@@ -73,15 +75,16 @@
     if (([self.apps count] - 1) != indexPath.row) {
         cell = [tableView dequeueReusableCellWithIdentifier:cellIdentifier];
         if (cell == nil) cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleSubtitle reuseIdentifier:cellIdentifier];
-    
+
         NSDictionary *app = self.apps[indexPath.row];
 
         cell.textLabel.text = app[@"name"];
         cell.detailTextLabel.text = [NSString stringWithFormat:@"%@ • %@", app[@"version"], app[@"bundleID"]];
         cell.imageView.image = [UIImage _applicationIconImageForBundleIdentifier:app[@"bundleID"] format:iconFormat() scale:[UIScreen mainScreen].scale];
-    } else {
+    }
+    else {
         cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleSubtitle reuseIdentifier:nil];
-        
+
         cell.textLabel.text = @"Advanced";
         cell.detailTextLabel.text = @"Decrypt app from a specified PID";
         cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
@@ -96,19 +99,22 @@
 
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
     UIAlertController *alert;
-    
+
     if (([self.apps count] - 1) != indexPath.row) {
         NSDictionary *app = self.apps[indexPath.row];
 
         alert = [UIAlertController alertControllerWithTitle:@"Decrypt" message:[NSString stringWithFormat:@"Decrypt %@?", app[@"name"]] preferredStyle:UIAlertControllerStyleAlert];
         UIAlertAction *cancel = [UIAlertAction actionWithTitle:@"Cancel" style:UIAlertActionStyleCancel handler:nil];
-        UIAlertAction *decrypt = [UIAlertAction actionWithTitle:@"Yes" style:UIAlertActionStyleDefault handler:^(UIAlertAction *action) {
-            decryptApp(app);
-        }];
+        UIAlertAction *decrypt = [UIAlertAction actionWithTitle:@"Yes"
+                                                          style:UIAlertActionStyleDefault
+                                                        handler:^(UIAlertAction *action) {
+                                                            decryptApp(app);
+                                                        }];
 
         [alert addAction:decrypt];
         [alert addAction:cancel];
-    } else {
+    }
+    else {
         alert = [UIAlertController alertControllerWithTitle:@"Decrypt" message:@"Enter PID to decrypt" preferredStyle:UIAlertControllerStyleAlert];
         [alert addTextFieldWithConfigurationHandler:^(UITextField *textField) {
             textField.placeholder = @"PID";
@@ -116,10 +122,12 @@
         }];
 
         UIAlertAction *cancel = [UIAlertAction actionWithTitle:@"Cancel" style:UIAlertActionStyleCancel handler:nil];
-        UIAlertAction *decrypt = [UIAlertAction actionWithTitle:@"Decrypt" style:UIAlertActionStyleDefault handler:^(UIAlertAction *action) {
-            NSString *pid = alert.textFields.firstObject.text;
-            decryptAppWithPID([pid intValue]);
-        }];
+        UIAlertAction *decrypt = [UIAlertAction actionWithTitle:@"Decrypt"
+                                                          style:UIAlertActionStyleDefault
+                                                        handler:^(UIAlertAction *action) {
+                                                            NSString *pid = alert.textFields.firstObject.text;
+                                                            decryptAppWithPID([pid intValue]);
+                                                        }];
 
         [alert addAction:decrypt];
         [alert addAction:cancel];
