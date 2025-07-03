@@ -2,6 +2,6 @@
 
 @interface TDRootViewController : UITableViewController
 
-@property (nonatomic, strong) NSArray *apps;
+@property(nonatomic, strong) NSArray *apps;
 
 @end

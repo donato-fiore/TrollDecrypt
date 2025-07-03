@@ -2,6 +2,6 @@
 
 @interface TDFileManagerViewController : UITableViewController
 
-@property (nonatomic, strong) NSArray *fileList;
+@property(nonatomic, strong) NSArray *fileList;
 
 @end

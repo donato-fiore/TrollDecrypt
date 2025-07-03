@@ -3,3 +3,5 @@ packages/
 *.DS_Store
 Payload/
 TrollDecrypt.tipa
+compile_commands.json
+.cache
