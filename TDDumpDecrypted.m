@@ -294,7 +294,8 @@ int find_off_cryptid(const char *filePath) {
 }
 
  
--(BOOL) dumpDecryptedImage:(vm_address_t)imageAddress fileName:(const char *)encryptedImageFilenameStr image:(int)imageNum task:(vm_map_t)targetTask{
+//-(BOOL) dumpDecryptedImage:(vm_address_t)imageAddress fileName:(const char *)encryptedImageFilenameStr image:(int)imageNum task:(vm_map_t)targetTask{
+-(BOOL) dumpDecryptedImage:(const struct mach_header *)imageAddress fileName:(const char *)encryptedImageFilenameStr image:(int)imageNum task:(vm_map_t)targetTask{
 	// struct load_command *lc;
 	struct encryption_info_command *eic;
 	struct fat_header *fh;
@@ -306,7 +307,8 @@ int find_off_cryptid(const char *filePath) {
 
     struct mach_header header = {0};
     vm_region_basic_info_data_64_t region_info = {0};
-    if (readmem((mach_vm_offset_t*)&header, imageAddress, sizeof(struct mach_header), targetTask, &region_info))
+//    if (readmem((mach_vm_offset_t*)&header, imageAddress, sizeof(struct mach_header), targetTask, &region_info))
+    if (readmem((mach_vm_offset_t*)&header, (mach_vm_address_t)imageAddress, sizeof(struct mach_header), targetTask, &region_info))
     {
         NSLog(@"[trolldecrypt] Can't read header!");
         exit(1);
@@ -318,11 +320,13 @@ int find_off_cryptid(const char *filePath) {
 	/* detect if this is a arm64 binary */
 	if (header.magic == MH_MAGIC_64) {
 		// lc = (struct load_command *)((unsigned char *)header + sizeof(struct mach_header_64));
-        readmem((mach_vm_offset_t*)lc, imageAddress+sizeof(struct mach_header_64), header.sizeofcmds, targetTask, &region_info);
+//        readmem((mach_vm_offset_t*)lc, imageAddress+sizeof(struct mach_header_64), header.sizeofcmds, targetTask, &region_info);
+        readmem((mach_vm_offset_t*)lc, (mach_vm_address_t)imageAddress + sizeof(struct mach_header_64), header.sizeofcmds, targetTask, &region_info);
 		NSLog(@"[trolldecrypt] detected 64bit ARM binary in memory.\n");
 	} else if(header.magic == MH_MAGIC) { /* we might want to check for other errors here, too */
 		// lc = (struct load_command *)((unsigned char *)header + sizeof(struct mach_header));
-        readmem((mach_vm_offset_t*)lc, imageAddress+sizeof(struct mach_header), header.sizeofcmds, targetTask, &region_info);
+//        readmem((mach_vm_offset_t*)lc, imageAddress+sizeof(struct mach_header), header.sizeofcmds, targetTask, &region_info);
+        readmem((mach_vm_offset_t*)lc, (mach_vm_address_t)imageAddress + sizeof(struct mach_header), header.sizeofcmds, targetTask, &region_info);
 		NSLog(@"[trolldecrypt] detected 32bit ARM binary in memory.\n");
 	} else {
 		NSLog(@"[trolldecrypt] No valid header found!!");
@@ -357,9 +361,12 @@ int find_off_cryptid(const char *filePath) {
 			[self makeDirectories:encryptedImageFilenameStr];
 
             //0x1518
-            uint32_t aslr_slide = 0;
-            get_image_size(imageAddress, targetTask, &aslr_slide);
-            NSLog(@"[trolldecrypt] aslr_slide= 0x%x", aslr_slide);
+//            uint32_t aslr_slide = 0;
+//            get_image_size(imageAddress, targetTask, &aslr_slide);
+            uint64_t aslr_slide = 0;
+            get_image_size((mach_vm_address_t)imageAddress, targetTask, &aslr_slide);
+//            NSLog(@"[trolldecrypt] aslr_slide= 0x%x", aslr_slide);
+            NSLog(@"[trolldecrypt] aslr_slide= 0x%llx", aslr_slide);
 
 			off_cryptid=find_off_cryptid(encryptedImageFilenameStr);
 
@@ -441,7 +448,10 @@ int find_off_cryptid(const char *filePath) {
 
 			NSLog(@"[trolldecrypt] Dumping the decrypted data into the file (%u bytes)\n", eic->cryptsize);
             buf = (char *)malloc((size_t)eic->cryptsize);
-            readmem((mach_vm_offset_t*)buf, imageAddress+eic->cryptoff, eic->cryptsize, targetTask, &region_info);
+//            readmem((mach_vm_offset_t*)buf, imageAddress+eic->cryptoff, eic->cryptsize, targetTask, &region_info);
+            readmem((mach_vm_offset_t*)buf,
+                    (mach_vm_address_t)imageAddress + eic->cryptoff,
+                    eic->cryptsize, targetTask, &region_info);
 			// r = write(outfd, (unsigned char *)image_mh + eic->cryptoff, eic->cryptsize);
             r = write(outfd, buf, eic->cryptsize);
 			if (r != eic->cryptsize) {
@@ -522,7 +532,8 @@ int find_off_cryptid(const char *filePath) {
     struct dyld_image_info* info = (struct dyld_image_info*) info_addr;
         
     uint32_t numberOfImages = infos->infoArrayCount;
-    mach_vm_address_t imageAddress = 0;
+//    mach_vm_address_t imageAddress = 0;
+    const struct mach_header *imageAddress = NULL;
     const char *appPath = [[self appPath] UTF8String];
 
     NSLog(@"[trolldecrypt] There are %d images mapped.", numberOfImages);
@@ -532,7 +543,8 @@ int find_off_cryptid(const char *filePath) {
         mach_msg_type_number_t size3 = PATH_MAX;
         uint8_t *fpath_addr = readProcessMemory(targetTask, (mach_vm_address_t) info[i].imageFilePath, &size3);
         
-        imageAddress = (struct mach_header *)info[i].imageLoadAddress;
+//        imageAddress = (struct mach_header *)info[i].imageLoadAddress;
+        imageAddress = (const struct mach_header *)info[i].imageLoadAddress;
         const char *imageName = fpath_addr;
 
         if(!imageName || !imageAddress)
