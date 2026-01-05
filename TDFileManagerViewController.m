@@ -89,6 +89,16 @@
     NSURL *url = [NSURL fileURLWithPath:path];
 
     UIActivityViewController *activityViewController = [[UIActivityViewController alloc] initWithActivityItems:@[url] applicationActivities:nil];
+
+    // if the popover presentation controller exists, then we require one for this device (e.g. iPad)
+    if (activityViewController.popoverPresentationController != nil) {
+        UITableViewCell *cell = [tableView cellForRowAtIndexPath:indexPath];
+        if (cell != nil) {
+            activityViewController.popoverPresentationController.sourceView = cell.contentView;
+            activityViewController.popoverPresentationController.sourceRect = cell.contentView.bounds;
+        }
+    }
+
     [self presentViewController:activityViewController animated:YES completion:nil];
 
     [tableView deselectRowAtIndexPath:indexPath animated:YES];
