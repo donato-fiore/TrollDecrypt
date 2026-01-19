@@ -1,0 +1,33 @@
+CANCEL = "Hủy";
+DECRYPT = "Giải mã";
+DELETE = "Xóa";
+OK = "OK";
+SUCCESS = "Thành công";
+ERROR = "Lỗi";
+DECRYPTING = "Đang giải mã";
+
+ALTERNATE_ICONS = "Biểu tượng thay thế";
+
+DECRYPT_APPS = "Giải mã ứng dụng";
+DECRYPTED_FILES = "Tệp đã giải mã";
+
+DECRYPTED_IPAS = "IPA đã giải mã (%lu)";
+DECRYPTED_BINARIES = "Tệp nhị phân đã giải mã (%lu)";
+
+DECRYPTION_PROMPT = "Bạn có muốn giải mã %@ không?";
+MAIN_BINARY_ONLY = "Chỉ tệp nhị phân chính";
+FULL_IPA = "Toàn bộ IPA";
+
+LAUNCHING_APPLICATION = "Đang khởi chạy ứng dụng...";
+COPYING_BUNDLE = "Đang sao chép gói ứng dụng...";
+DECRYPTING_BINARY = "Đang giải mã tệp nhị phân...";
+DECRYPTION_COMPLETED = "Giải mã thành công!";
+BUILDING_IPA = "Đang tạo IPA... (Quá trình này có thể mất một lúc)";
+
+SEARCH_APPLICATIONS = "Tìm kiếm ứng dụng";
+
+MANUAL_ENTRY_TITLE = "Nhập mã định danh gói thủ công";
+MANUAL_ENTRY_SUBTITLE = "Nhập mã định danh gói của ứng dụng bạn muốn giải mã.";
+
+SHOW_IN_FILZA = "Hiển thị trong Filza";
+SHOW_IN_FILES = "Hiển thị trong Tệp";

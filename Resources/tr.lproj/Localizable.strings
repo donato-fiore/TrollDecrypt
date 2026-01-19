@@ -1,0 +1,33 @@
+CANCEL = "İptal";
+DECRYPT = "Şifreyi Çöz";
+DELETE = "Sil";
+OK = "Tamam";
+SUCCESS = "Başarılı";
+ERROR = "Hata";
+DECRYPTING = "Şifre Çözülüyor";
+
+ALTERNATE_ICONS = "Alternatif Simgeler";
+
+DECRYPT_APPS = "Uygulamaların Şifresini Çöz";
+DECRYPTED_FILES = "Şifresi Çözülmüş Dosyalar";
+
+DECRYPTED_IPAS = "Şifresi Çözülmüş IPA'lar (%lu)";
+DECRYPTED_BINARIES = "Şifresi Çözülmüş İkili Dosyalar (%lu)";
+
+DECRYPTION_PROMPT = "%@ uygulamasının şifresini çözmek istiyor musunuz?";
+MAIN_BINARY_ONLY = "Sadece Ana İkili Dosya";
+FULL_IPA = "Tüm IPA";
+
+LAUNCHING_APPLICATION = "Uygulama Başlatılıyor...";
+COPYING_BUNDLE = "Uygulama Paketi Kopyalanıyor...";
+DECRYPTING_BINARY = "İkili Dosya Şifresi Çözülüyor...";
+DECRYPTION_COMPLETED = "Şifre Çözme Tamamlandı!";
+BUILDING_IPA = "IPA Oluşturuluyor... (Bu biraz zaman alabilir)";
+
+SEARCH_APPLICATIONS = "Uygulamalarda Ara";
+
+MANUAL_ENTRY_TITLE = "Manuel Paket Tanımlayıcı";
+MANUAL_ENTRY_SUBTITLE = "Şifresini çözmek istediğiniz uygulamanın paket tanımlayıcısını girin.";
+
+SHOW_IN_FILZA = "Filza'da Göster";
+SHOW_IN_FILES = "Dosyalar'da Göster";

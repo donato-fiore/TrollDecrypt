@@ -1,0 +1,33 @@
+CANCEL = "Annulla";
+DECRYPT = "Decripta";
+DELETE = "Elimina";
+OK = "OK";
+SUCCESS = "Successo";
+ERROR = "Errore";
+DECRYPTING = "Decriptazione in corso";
+
+ALTERNATE_ICONS = "Icone alternative";
+
+DECRYPT_APPS = "Decripta app";
+DECRYPTED_FILES = "File decriptati";
+
+DECRYPTED_IPAS = "IPA decriptati (%lu)";
+DECRYPTED_BINARIES = "Binari decriptati (%lu)";
+
+DECRYPTION_PROMPT = "Vuoi decriptare %@?";
+MAIN_BINARY_ONLY = "Solo binario principale";
+FULL_IPA = "IPA completo";
+
+LAUNCHING_APPLICATION = "Avvio dell'applicazione...";
+COPYING_BUNDLE = "Copia del bundle dell'applicazione...";
+DECRYPTING_BINARY = "Decriptazione del binario...";
+DECRYPTION_COMPLETED = "Decriptazione completata!";
+BUILDING_IPA = "Creazione IPA... (Potrebbe richiedere un minuto)";
+
+SEARCH_APPLICATIONS = "Cerca applicazioni";
+
+MANUAL_ENTRY_TITLE = "Identificatore bundle manuale";
+MANUAL_ENTRY_SUBTITLE = "Inserisci l'identificatore bundle dell'applicazione che vuoi decriptare.";
+
+SHOW_IN_FILZA = "Mostra in Filza";
+SHOW_IN_FILES = "Mostra in File";

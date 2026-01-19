@@ -1,0 +1,33 @@
+CANCEL = "रद्द करें";
+DECRYPT = "डिक्रिप्ट करें";
+DELETE = "हटाएं";
+OK = "ठीक है";
+SUCCESS = "सफलता";
+ERROR = "त्रुटि";
+DECRYPTING = "डिक्रिप्ट किया जा रहा है";
+
+ALTERNATE_ICONS = "वैकल्पिक आइकन";
+
+DECRYPT_APPS = "ऐप्स डिक्रिप्ट करें";
+DECRYPTED_FILES = "डिक्रिप्ट की गई फाइलें";
+
+DECRYPTED_IPAS = "डिक्रिप्ट की गई IPA (%lu)";
+DECRYPTED_BINARIES = "डिक्रिप्ट किए गए बाइनरी (%lu)";
+
+DECRYPTION_PROMPT = "क्या आप %@ को डिक्रिप्ट करना चाहते हैं?";
+MAIN_BINARY_ONLY = "केवल मुख्य बाइनरी";
+FULL_IPA = "पूर्ण IPA";
+
+LAUNCHING_APPLICATION = "एप्लिकेशन लॉन्च किया जा रहा है...";
+COPYING_BUNDLE = "एप्लिकेशन बंडल कॉपी किया जा रहा है...";
+DECRYPTING_BINARY = "बाइनरी डिक्रिप्ट की जा रही है...";
+DECRYPTION_COMPLETED = "डिक्रिप्शन पूर्ण हुआ!";
+BUILDING_IPA = "IPA बनाया जा रहा है... (इसमें एक मिनट लग सकता है)";
+
+SEARCH_APPLICATIONS = "एप्लिकेशन खोजें";
+
+MANUAL_ENTRY_TITLE = "मैन्युअल बंडल पहचानकर्ता";
+MANUAL_ENTRY_SUBTITLE = "उस एप्लिकेशन का बंडल पहचानकर्ता दर्ज करें जिसे आप डिक्रिप्ट करना चाहते हैं।";
+
+SHOW_IN_FILZA = "Filza में दिखाएं";
+SHOW_IN_FILES = "Files में दिखाएं";

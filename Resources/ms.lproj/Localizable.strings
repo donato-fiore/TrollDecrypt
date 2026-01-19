@@ -1,0 +1,33 @@
+CANCEL = "Batal";
+DECRYPT = "Nyahsulit";
+DELETE = "Padam";
+OK = "OK";
+SUCCESS = "Berjaya";
+ERROR = "Ralat";
+DECRYPTING = "Sedang menyahsulit";
+
+ALTERNATE_ICONS = "Ikon Alternatif";
+
+DECRYPT_APPS = "Nyahsulit Aplikasi";
+DECRYPTED_FILES = "Fail yang Telah Disahsulit";
+
+DECRYPTED_IPAS = "IPA yang Telah Disahsulit (%lu)";
+DECRYPTED_BINARIES = "Binari yang Telah Disahsulit (%lu)";
+
+DECRYPTION_PROMPT = "Adakah anda ingin menyahsulit %@?";
+MAIN_BINARY_ONLY = "Hanya Binari Utama";
+FULL_IPA = "IPA Penuh";
+
+LAUNCHING_APPLICATION = "Sedang Melancarkan Aplikasi...";
+COPYING_BUNDLE = "Sedang Menyalin Bundle Aplikasi...";
+DECRYPTING_BINARY = "Sedang Menyahsulit Binari...";
+DECRYPTION_COMPLETED = "Nyahsulitan Selesai!";
+BUILDING_IPA = "Sedang Membina IPA... (Ini mungkin mengambil masa sebentar)";
+
+SEARCH_APPLICATIONS = "Cari Aplikasi";
+
+MANUAL_ENTRY_TITLE = "Pengenal Bundle Manual";
+MANUAL_ENTRY_SUBTITLE = "Masukkan pengenal bundle aplikasi yang anda ingin nyahsulit.";
+
+SHOW_IN_FILZA = "Tunjuk dalam Filza";
+SHOW_IN_FILES = "Tunjuk dalam Fail";

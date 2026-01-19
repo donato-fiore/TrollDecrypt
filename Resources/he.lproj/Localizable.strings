@@ -1,0 +1,33 @@
+CANCEL = "ביטול";
+DECRYPT = "פענוח";
+DELETE = "מחיקה";
+OK = "אישור";
+SUCCESS = "הצלחה";
+ERROR = "שגיאה";
+DECRYPTING = "מפענח";
+
+ALTERNATE_ICONS = "אייקונים חלופיים";
+
+DECRYPT_APPS = "פענוח אפליקציות";
+DECRYPTED_FILES = "קבצים מפוענחים";
+
+DECRYPTED_IPAS = "קבצי IPA מפוענחים (%lu)";
+DECRYPTED_BINARIES = "בינאריים מפוענחים (%lu)";
+
+DECRYPTION_PROMPT = "האם ברצונך לפענח את %@?";
+MAIN_BINARY_ONLY = "בינארי ראשי בלבד";
+FULL_IPA = "IPA מלא";
+
+LAUNCHING_APPLICATION = "מפעיל את האפליקציה...";
+COPYING_BUNDLE = "מעתיק את חבילת האפליקציה...";
+DECRYPTING_BINARY = "מפענח את הקובץ הבינארי...";
+DECRYPTION_COMPLETED = "הפענוח הושלם!";
+BUILDING_IPA = "בונה קובץ IPA... (זה עשוי לקחת דקה)";
+
+SEARCH_APPLICATIONS = "חיפוש אפליקציות";
+
+MANUAL_ENTRY_TITLE = "מזהה חבילה ידני";
+MANUAL_ENTRY_SUBTITLE = "הזן את מזהה החבילה של האפליקציה שברצונך לפענח.";
+
+SHOW_IN_FILZA = "הצג ב-Filza";
+SHOW_IN_FILES = "הצג בקבצים";

@@ -1,0 +1,33 @@
+CANCEL = "Скасувати";
+DECRYPT = "Розшифрувати";
+DELETE = "Видалити";
+OK = "OK";
+SUCCESS = "Успішно";
+ERROR = "Помилка";
+DECRYPTING = "Розшифрування";
+
+ALTERNATE_ICONS = "Альтернативні іконки";
+
+DECRYPT_APPS = "Розшифрувати додатки";
+DECRYPTED_FILES = "Розшифровані файли";
+
+DECRYPTED_IPAS = "Розшифровані IPA (%lu)";
+DECRYPTED_BINARIES = "Розшифровані бінарні файли (%lu)";
+
+DECRYPTION_PROMPT = "Бажаєте розшифрувати %@?";
+MAIN_BINARY_ONLY = "Тільки головний бінарний файл";
+FULL_IPA = "Повний IPA";
+
+LAUNCHING_APPLICATION = "Запуск додатку...";
+COPYING_BUNDLE = "Копіювання пакету додатку...";
+DECRYPTING_BINARY = "Розшифрування бінарного файлу...";
+DECRYPTION_COMPLETED = "Розшифрування завершено!";
+BUILDING_IPA = "Створення IPA... (Це може зайняти хвилину)";
+
+SEARCH_APPLICATIONS = "Пошук додатків";
+
+MANUAL_ENTRY_TITLE = "Введення ідентифікатора пакету вручну";
+MANUAL_ENTRY_SUBTITLE = "Введіть ідентифікатор пакету додатку, який бажаєте розшифрувати.";
+
+SHOW_IN_FILZA = "Показати у Filza";
+SHOW_IN_FILES = "Показати у Файлах";

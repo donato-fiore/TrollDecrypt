@@ -1,0 +1,33 @@
+CANCEL = "취소";
+DECRYPT = "복호화";
+DELETE = "삭제";
+OK = "확인";
+SUCCESS = "성공";
+ERROR = "오류";
+DECRYPTING = "복호화 중";
+
+ALTERNATE_ICONS = "대체 아이콘";
+
+DECRYPT_APPS = "앱 복호화";
+DECRYPTED_FILES = "복호화된 파일";
+
+DECRYPTED_IPAS = "복호화된 IPA (%lu)";
+DECRYPTED_BINARIES = "복호화된 바이너리 (%lu)";
+
+DECRYPTION_PROMPT = "%@을(를) 복호화하시겠습니까?";
+MAIN_BINARY_ONLY = "메인 바이너리만";
+FULL_IPA = "전체 IPA";
+
+LAUNCHING_APPLICATION = "애플리케이션 실행 중...";
+COPYING_BUNDLE = "애플리케이션 번들 복사 중...";
+DECRYPTING_BINARY = "바이너리 복호화 중...";
+DECRYPTION_COMPLETED = "복호화 완료!";
+BUILDING_IPA = "IPA 생성 중... (잠시만 기다려주세요)";
+
+SEARCH_APPLICATIONS = "애플리케이션 검색";
+
+MANUAL_ENTRY_TITLE = "번들 식별자 수동 입력";
+MANUAL_ENTRY_SUBTITLE = "복호화할 애플리케이션의 번들 식별자를 입력하세요.";
+
+SHOW_IN_FILZA = "Filza에서 보기";
+SHOW_IN_FILES = "파일에서 보기";

@@ -1,0 +1,33 @@
+CANCEL = "Annuller";
+DECRYPT = "Dekrypter";
+DELETE = "Slet";
+OK = "OK";
+SUCCESS = "Succes";
+ERROR = "Fejl";
+DECRYPTING = "Dekrypterer";
+
+ALTERNATE_ICONS = "Alternative ikoner";
+
+DECRYPT_APPS = "Dekrypter apps";
+DECRYPTED_FILES = "Dekrypterede filer";
+
+DECRYPTED_IPAS = "Dekrypterede IPA'er (%lu)";
+DECRYPTED_BINARIES = "Dekrypterede binære filer (%lu)";
+
+DECRYPTION_PROMPT = "Vil du dekryptere %@?";
+MAIN_BINARY_ONLY = "Kun hovedbinær";
+FULL_IPA = "Fuld IPA";
+
+LAUNCHING_APPLICATION = "Starter applikation...";
+COPYING_BUNDLE = "Kopierer applikationspakke...";
+DECRYPTING_BINARY = "Dekrypterer binær...";
+DECRYPTION_COMPLETED = "Dekryptering fuldført!";
+BUILDING_IPA = "Bygger IPA... (Dette kan tage et minut)";
+
+SEARCH_APPLICATIONS = "Søg i applikationer";
+
+MANUAL_ENTRY_TITLE = "Manuel bundle-identifikator";
+MANUAL_ENTRY_SUBTITLE = "Indtast bundle-identifikatoren for den applikation, du vil dekryptere.";
+
+SHOW_IN_FILZA = "Vis i Filza";
+SHOW_IN_FILES = "Vis i Filer";

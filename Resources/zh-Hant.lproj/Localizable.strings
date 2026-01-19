@@ -1,0 +1,33 @@
+CANCEL = "取消";
+DECRYPT = "解密";
+DELETE = "刪除";
+OK = "確定";
+SUCCESS = "成功";
+ERROR = "錯誤";
+DECRYPTING = "正在解密";
+
+ALTERNATE_ICONS = "替代圖示";
+
+DECRYPT_APPS = "解密應用程式";
+DECRYPTED_FILES = "已解密檔案";
+
+DECRYPTED_IPAS = "已解密 IPA（%lu）";
+DECRYPTED_BINARIES = "已解密二進位檔（%lu）";
+
+DECRYPTION_PROMPT = "您要解密 %@ 嗎？";
+MAIN_BINARY_ONLY = "僅主二進位檔";
+FULL_IPA = "完整 IPA";
+
+LAUNCHING_APPLICATION = "正在啟動應用程式...";
+COPYING_BUNDLE = "正在複製應用程式套件...";
+DECRYPTING_BINARY = "正在解密二進位檔...";
+DECRYPTION_COMPLETED = "解密完成！";
+BUILDING_IPA = "正在建立 IPA...（這可能需要一分鐘）";
+
+SEARCH_APPLICATIONS = "搜尋應用程式";
+
+MANUAL_ENTRY_TITLE = "手動輸入套件識別碼";
+MANUAL_ENTRY_SUBTITLE = "請輸入您想要解密的應用程式套件識別碼。";
+
+SHOW_IN_FILZA = "在 Filza 中顯示";
+SHOW_IN_FILES = "在檔案中顯示";

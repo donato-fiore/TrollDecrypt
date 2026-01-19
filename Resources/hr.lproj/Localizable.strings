@@ -1,0 +1,33 @@
+CANCEL = "Odustani";
+DECRYPT = "Dekriptiraj";
+DELETE = "Izbriši";
+OK = "U redu";
+SUCCESS = "Uspjeh";
+ERROR = "Greška";
+DECRYPTING = "Dekriptiranje";
+
+ALTERNATE_ICONS = "Alternativne ikone";
+
+DECRYPT_APPS = "Dekriptiraj aplikacije";
+DECRYPTED_FILES = "Dekriptirane datoteke";
+
+DECRYPTED_IPAS = "Dekriptirani IPA-ovi (%lu)";
+DECRYPTED_BINARIES = "Dekriptirani binarici (%lu)";
+
+DECRYPTION_PROMPT = "Želite li dekriptirati %@?";
+MAIN_BINARY_ONLY = "Samo glavni binar";
+FULL_IPA = "Cijeli IPA";
+
+LAUNCHING_APPLICATION = "Pokretanje aplikacije...";
+COPYING_BUNDLE = "Kopiranje paketa aplikacije...";
+DECRYPTING_BINARY = "Dekriptiranje binara...";
+DECRYPTION_COMPLETED = "Dekriptiranje završeno!";
+BUILDING_IPA = "Izrada IPA-a... (Ovo može potrajati minutu)";
+
+SEARCH_APPLICATIONS = "Pretraži aplikacije";
+
+MANUAL_ENTRY_TITLE = "Ručno unos identifikatora paketa";
+MANUAL_ENTRY_SUBTITLE = "Unesite identifikator paketa aplikacije koju želite dekriptirati.";
+
+SHOW_IN_FILZA = "Prikaži u Filza";
+SHOW_IN_FILES = "Prikaži u Datotekama";

@@ -1,0 +1,33 @@
+CANCEL = "Batal";
+DECRYPT = "Dekripsi";
+DELETE = "Hapus";
+OK = "OK";
+SUCCESS = "Berhasil";
+ERROR = "Kesalahan";
+DECRYPTING = "Mendekripsi";
+
+ALTERNATE_ICONS = "Ikon Alternatif";
+
+DECRYPT_APPS = "Dekripsi Aplikasi";
+DECRYPTED_FILES = "Berkas yang Didekripsi";
+
+DECRYPTED_IPAS = "IPA yang Didekripsi (%lu)";
+DECRYPTED_BINARIES = "Biner yang Didekripsi (%lu)";
+
+DECRYPTION_PROMPT = "Apakah Anda ingin mendekripsi %@?";
+MAIN_BINARY_ONLY = "Hanya Biner Utama";
+FULL_IPA = "IPA Lengkap";
+
+LAUNCHING_APPLICATION = "Meluncurkan Aplikasi...";
+COPYING_BUNDLE = "Menyalin Bundle Aplikasi...";
+DECRYPTING_BINARY = "Mendekripsi Biner...";
+DECRYPTION_COMPLETED = "Dekripsi Selesai!";
+BUILDING_IPA = "Membangun IPA... (Ini mungkin memakan waktu satu menit)";
+
+SEARCH_APPLICATIONS = "Cari Aplikasi";
+
+MANUAL_ENTRY_TITLE = "Masukkan Bundle Identifier Secara Manual";
+MANUAL_ENTRY_SUBTITLE = "Masukkan bundle identifier aplikasi yang ingin Anda dekripsi.";
+
+SHOW_IN_FILZA = "Tampilkan di Filza";
+SHOW_IN_FILES = "Tampilkan di File";

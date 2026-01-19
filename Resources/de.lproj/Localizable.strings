@@ -1,0 +1,33 @@
+CANCEL = "Abbrechen";
+DECRYPT = "Entschlüsseln";
+DELETE = "Löschen";
+OK = "OK";
+SUCCESS = "Erfolg";
+ERROR = "Fehler";
+DECRYPTING = "Entschlüsselung läuft";
+
+ALTERNATE_ICONS = "Alternative Symbole";
+
+DECRYPT_APPS = "Apps entschlüsseln";
+DECRYPTED_FILES = "Entschlüsselte Dateien";
+
+DECRYPTED_IPAS = "Entschlüsselte IPAs (%lu)";
+DECRYPTED_BINARIES = "Entschlüsselte Binärdateien (%lu)";
+
+DECRYPTION_PROMPT = "Möchten Sie %@ entschlüsseln?";
+MAIN_BINARY_ONLY = "Nur Haupt-Binärdatei";
+FULL_IPA = "Komplettes IPA";
+
+LAUNCHING_APPLICATION = "Anwendung wird gestartet...";
+COPYING_BUNDLE = "Anwendungspaket wird kopiert...";
+DECRYPTING_BINARY = "Binärdatei wird entschlüsselt...";
+DECRYPTION_COMPLETED = "Entschlüsselung abgeschlossen!";
+BUILDING_IPA = "IPA wird erstellt... (Dies kann eine Minute dauern)";
+
+SEARCH_APPLICATIONS = "Apps durchsuchen";
+
+MANUAL_ENTRY_TITLE = "Manuelle Bundle-ID";
+MANUAL_ENTRY_SUBTITLE = "Geben Sie die Bundle-ID der App ein, die Sie entschlüsseln möchten.";
+
+SHOW_IN_FILZA = "In Filza anzeigen";
+SHOW_IN_FILES = "In Dateien anzeigen";

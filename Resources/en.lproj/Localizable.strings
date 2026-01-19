@@ -1,0 +1,33 @@
+CANCEL = "Cancel";
+DECRYPT = "Decrypt";
+DELETE = "Delete";
+OK = "OK";
+SUCCESS = "Success";
+ERROR = "Error";
+DECRYPTING = "Decrypting";
+
+ALTERNATE_ICONS = "Alternate Icons";
+
+DECRYPT_APPS = "Decrypt Apps";
+DECRYPTED_FILES = "Decrypted Files";
+
+DECRYPTED_IPAS = "Decrypted IPAs (%lu)";
+DECRYPTED_BINARIES = "Decrypted Binaries (%lu)";
+
+DECRYPTION_PROMPT = "Do you want to decrypt %@?";
+MAIN_BINARY_ONLY = "Main Binary Only";
+FULL_IPA = "Full IPA";
+
+LAUNCHING_APPLICATION = "Launching Application...";
+COPYING_BUNDLE = "Copying Application Bundle...";
+DECRYPTING_BINARY = "Decrypting Binary...";
+DECRYPTION_COMPLETED = "Decryption Complete!";
+BUILDING_IPA = "Building IPA... (This might take a minute)";
+
+SEARCH_APPLICATIONS = "Search Applications";
+
+MANUAL_ENTRY_TITLE = "Manual Bundle Identifier";
+MANUAL_ENTRY_SUBTITLE = "Enter the bundle identifier of the application you want to decrypt.";
+
+SHOW_IN_FILZA = "Show in Filza";
+SHOW_IN_FILES = "Show in Files";

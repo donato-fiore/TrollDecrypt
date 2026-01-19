@@ -1,0 +1,33 @@
+CANCEL = "Zrušiť";
+DECRYPT = "Dešifrovať";
+DELETE = "Odstrániť";
+OK = "OK";
+SUCCESS = "Úspech";
+ERROR = "Chyba";
+DECRYPTING = "Dešifrovanie";
+
+ALTERNATE_ICONS = "Alternatívne ikony";
+
+DECRYPT_APPS = "Dešifrovať aplikácie";
+DECRYPTED_FILES = "Dešifrované súbory";
+
+DECRYPTED_IPAS = "Dešifrované IPA súbory (%lu)";
+DECRYPTED_BINARIES = "Dešifrované binárky (%lu)";
+
+DECRYPTION_PROMPT = "Chcete dešifrovať %@?";
+MAIN_BINARY_ONLY = "Len hlavná binárka";
+FULL_IPA = "Celé IPA";
+
+LAUNCHING_APPLICATION = "Spúšťanie aplikácie...";
+COPYING_BUNDLE = "Kopírovanie balíka aplikácie...";
+DECRYPTING_BINARY = "Dešifrovanie binárky...";
+DECRYPTION_COMPLETED = "Dešifrovanie dokončené!";
+BUILDING_IPA = "Vytváranie IPA... (Môže to chvíľu trvať)";
+
+SEARCH_APPLICATIONS = "Hľadať aplikácie";
+
+MANUAL_ENTRY_TITLE = "Manuálne zadať identifikátor balíka";
+MANUAL_ENTRY_SUBTITLE = "Zadajte identifikátor balíka aplikácie, ktorú chcete dešifrovať.";
+
+SHOW_IN_FILZA = "Zobraziť vo Filza";
+SHOW_IN_FILES = "Zobraziť v Súboroch";

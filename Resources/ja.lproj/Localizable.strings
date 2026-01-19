@@ -1,0 +1,33 @@
+CANCEL = "キャンセル";
+DECRYPT = "復号";
+DELETE = "削除";
+OK = "OK";
+SUCCESS = "成功";
+ERROR = "エラー";
+DECRYPTING = "復号中";
+
+ALTERNATE_ICONS = "代替アイコン";
+
+DECRYPT_APPS = "アプリを復号";
+DECRYPTED_FILES = "復号済みファイル";
+
+DECRYPTED_IPAS = "復号済みIPA（%lu）";
+DECRYPTED_BINARIES = "復号済みバイナリ（%lu）";
+
+DECRYPTION_PROMPT = "%@を復号しますか？";
+MAIN_BINARY_ONLY = "メインバイナリのみ";
+FULL_IPA = "フルIPA";
+
+LAUNCHING_APPLICATION = "アプリを起動中...";
+COPYING_BUNDLE = "アプリバンドルをコピー中...";
+DECRYPTING_BINARY = "バイナリを復号中...";
+DECRYPTION_COMPLETED = "復号完了！";
+BUILDING_IPA = "IPAを作成中...（しばらくお待ちください）";
+
+SEARCH_APPLICATIONS = "アプリを検索";
+
+MANUAL_ENTRY_TITLE = "バンドルIDを手動入力";
+MANUAL_ENTRY_SUBTITLE = "復号したいアプリのバンドルIDを入力してください。";
+
+SHOW_IN_FILZA = "Filzaで表示";
+SHOW_IN_FILES = "ファイルで表示";

@@ -1,0 +1,33 @@
+CANCEL = "Annuleren";
+DECRYPT = "Ontsleutelen";
+DELETE = "Verwijderen";
+OK = "OK";
+SUCCESS = "Succes";
+ERROR = "Fout";
+DECRYPTING = "Bezig met ontsleutelen";
+
+ALTERNATE_ICONS = "Alternatieve iconen";
+
+DECRYPT_APPS = "Apps ontsleutelen";
+DECRYPTED_FILES = "Ontsleutelde bestanden";
+
+DECRYPTED_IPAS = "Ontsleutelde IPA's (%lu)";
+DECRYPTED_BINARIES = "Ontsleutelde binaries (%lu)";
+
+DECRYPTION_PROMPT = "Wil je %@ ontsleutelen?";
+MAIN_BINARY_ONLY = "Alleen hoofd-binary";
+FULL_IPA = "Volledige IPA";
+
+LAUNCHING_APPLICATION = "Applicatie wordt gestart...";
+COPYING_BUNDLE = "Applicatiebundel wordt gekopieerd...";
+DECRYPTING_BINARY = "Binary wordt ontsleuteld...";
+DECRYPTION_COMPLETED = "Ontsleuteling voltooid!";
+BUILDING_IPA = "IPA wordt gebouwd... (Dit kan een minuut duren)";
+
+SEARCH_APPLICATIONS = "Zoek applicaties";
+
+MANUAL_ENTRY_TITLE = "Handmatige bundle-ID";
+MANUAL_ENTRY_SUBTITLE = "Voer de bundle-ID in van de app die je wilt ontsleutelen.";
+
+SHOW_IN_FILZA = "Toon in Filza";
+SHOW_IN_FILES = "Toon in Bestanden";

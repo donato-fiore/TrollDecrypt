@@ -1,0 +1,33 @@
+CANCEL = "Cancelar";
+DECRYPT = "Descriptografar";
+DELETE = "Excluir";
+OK = "OK";
+SUCCESS = "Sucesso";
+ERROR = "Erro";
+DECRYPTING = "Descriptografando";
+
+ALTERNATE_ICONS = "Ícones Alternativos";
+
+DECRYPT_APPS = "Descriptografar Apps";
+DECRYPTED_FILES = "Arquivos Descriptografados";
+
+DECRYPTED_IPAS = "IPAs Descriptografados (%lu)";
+DECRYPTED_BINARIES = "Binários Descriptografados (%lu)";
+
+DECRYPTION_PROMPT = "Você deseja descriptografar %@?";
+MAIN_BINARY_ONLY = "Apenas Binário Principal";
+FULL_IPA = "IPA Completo";
+
+LAUNCHING_APPLICATION = "Iniciando Aplicativo...";
+COPYING_BUNDLE = "Copiando Pacote do Aplicativo...";
+DECRYPTING_BINARY = "Descriptografando Binário...";
+DECRYPTION_COMPLETED = "Descriptografia Concluída!";
+BUILDING_IPA = "Construindo IPA... (Isso pode levar um minuto)";
+
+SEARCH_APPLICATIONS = "Buscar Aplicativos";
+
+MANUAL_ENTRY_TITLE = "Identificador do Pacote Manual";
+MANUAL_ENTRY_SUBTITLE = "Digite o identificador do pacote do aplicativo que você deseja descriptografar.";
+
+SHOW_IN_FILZA = "Mostrar no Filza";
+SHOW_IN_FILES = "Mostrar em Arquivos";

@@ -1,0 +1,33 @@
+CANCEL = "ยกเลิก";
+DECRYPT = "ถอดรหัส";
+DELETE = "ลบ";
+OK = "ตกลง";
+SUCCESS = "สำเร็จ";
+ERROR = "ข้อผิดพลาด";
+DECRYPTING = "กำลังถอดรหัส";
+
+ALTERNATE_ICONS = "ไอคอนทางเลือก";
+
+DECRYPT_APPS = "ถอดรหัสแอป";
+DECRYPTED_FILES = "ไฟล์ที่ถอดรหัสแล้ว";
+
+DECRYPTED_IPAS = "IPAs ที่ถอดรหัสแล้ว (%lu)";
+DECRYPTED_BINARIES = "ไฟล์ไบนารีที่ถอดรหัสแล้ว (%lu)";
+
+DECRYPTION_PROMPT = "คุณต้องการถอดรหัส %@ หรือไม่?";
+MAIN_BINARY_ONLY = "เฉพาะไฟล์ไบนารีหลัก";
+FULL_IPA = "IPA ทั้งหมด";
+
+LAUNCHING_APPLICATION = "กำลังเปิดแอปพลิเคชัน...";
+COPYING_BUNDLE = "กำลังคัดลอกชุดแอปพลิเคชัน...";
+DECRYPTING_BINARY = "กำลังถอดรหัสไบนารี...";
+DECRYPTION_COMPLETED = "ถอดรหัสเสร็จสิ้น!";
+BUILDING_IPA = "กำลังสร้างไฟล์ IPA... (อาจใช้เวลาสักครู่)";
+
+SEARCH_APPLICATIONS = "ค้นหาแอปพลิเคชัน";
+
+MANUAL_ENTRY_TITLE = "ป้อนรหัสบันเดิลด้วยตนเอง";
+MANUAL_ENTRY_SUBTITLE = "กรอกรหัสบันเดิลของแอปพลิเคชันที่คุณต้องการถอดรหัส";
+
+SHOW_IN_FILZA = "แสดงใน Filza";
+SHOW_IN_FILES = "แสดงในไฟล์";

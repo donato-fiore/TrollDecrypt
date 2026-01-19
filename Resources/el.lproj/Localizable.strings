@@ -1,0 +1,33 @@
+CANCEL = "Ακύρωση";
+DECRYPT = "Αποκρυπτογράφηση";
+DELETE = "Διαγραφή";
+OK = "OK";
+SUCCESS = "Επιτυχία";
+ERROR = "Σφάλμα";
+DECRYPTING = "Αποκρυπτογράφηση";
+
+ALTERNATE_ICONS = "Εναλλακτικά Εικονίδια";
+
+DECRYPT_APPS = "Αποκρυπτογράφηση Εφαρμογών";
+DECRYPTED_FILES = "Αποκρυπτογραφημένα Αρχεία";
+
+DECRYPTED_IPAS = "Αποκρυπτογραφημένα IPA (%lu)";
+DECRYPTED_BINARIES = "Αποκρυπτογραφημένα Δυαδικά (%lu)";
+
+DECRYPTION_PROMPT = "Θέλετε να αποκρυπτογραφήσετε το %@;";
+MAIN_BINARY_ONLY = "Μόνο Κύριο Δυαδικό";
+FULL_IPA = "Ολόκληρο IPA";
+
+LAUNCHING_APPLICATION = "Εκκίνηση Εφαρμογής...";
+COPYING_BUNDLE = "Αντιγραφή Πακέτου Εφαρμογής...";
+DECRYPTING_BINARY = "Αποκρυπτογράφηση Δυαδικού...";
+DECRYPTION_COMPLETED = "Η αποκρυπτογράφηση ολοκληρώθηκε!";
+BUILDING_IPA = "Δημιουργία IPA... (Αυτό μπορεί να διαρκέσει ένα λεπτό)";
+
+SEARCH_APPLICATIONS = "Αναζήτηση Εφαρμογών";
+
+MANUAL_ENTRY_TITLE = "Χειροκίνητο Bundle Identifier";
+MANUAL_ENTRY_SUBTITLE = "Εισάγετε το bundle identifier της εφαρμογής που θέλετε να αποκρυπτογραφήσετε.";
+
+SHOW_IN_FILZA = "Εμφάνιση στο Filza";
+SHOW_IN_FILES = "Εμφάνιση στα Αρχεία";

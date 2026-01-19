@@ -1,0 +1,33 @@
+CANCEL = "Anulează";
+DECRYPT = "Decriptează";
+DELETE = "Șterge";
+OK = "OK";
+SUCCESS = "Succes";
+ERROR = "Eroare";
+DECRYPTING = "Se decriptează";
+
+ALTERNATE_ICONS = "Icoane alternative";
+
+DECRYPT_APPS = "Decriptează aplicații";
+DECRYPTED_FILES = "Fișiere decriptate";
+
+DECRYPTED_IPAS = "IPA-uri decriptate (%lu)";
+DECRYPTED_BINARIES = "Binaruri decriptate (%lu)";
+
+DECRYPTION_PROMPT = "Doriți să decriptați %@?";
+MAIN_BINARY_ONLY = "Doar binarul principal";
+FULL_IPA = "IPA complet";
+
+LAUNCHING_APPLICATION = "Se lansează aplicația...";
+COPYING_BUNDLE = "Se copiază pachetul aplicației...";
+DECRYPTING_BINARY = "Se decriptează binarul...";
+DECRYPTION_COMPLETED = "Decriptare finalizată!";
+BUILDING_IPA = "Se creează IPA... (Acest proces poate dura un minut)";
+
+SEARCH_APPLICATIONS = "Caută aplicații";
+
+MANUAL_ENTRY_TITLE = "Identificator de pachet manual";
+MANUAL_ENTRY_SUBTITLE = "Introduceți identificatorul de pachet al aplicației pe care doriți să o decriptați.";
+
+SHOW_IN_FILZA = "Arată în Filza";
+SHOW_IN_FILES = "Arată în Fișiere";

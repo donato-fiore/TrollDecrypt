@@ -1,0 +1,33 @@
+CANCEL = "Mégse";
+DECRYPT = "Visszafejtés";
+DELETE = "Törlés";
+OK = "OK";
+SUCCESS = "Sikeres";
+ERROR = "Hiba";
+DECRYPTING = "Visszafejtés folyamatban";
+
+ALTERNATE_ICONS = "Alternatív ikonok";
+
+DECRYPT_APPS = "Alkalmazások visszafejtése";
+DECRYPTED_FILES = "Visszafejtett fájlok";
+
+DECRYPTED_IPAS = "Visszafejtett IPA-k (%lu)";
+DECRYPTED_BINARIES = "Visszafejtett binárisok (%lu)";
+
+DECRYPTION_PROMPT = "Szeretné visszafejteni ezt: %@?";
+MAIN_BINARY_ONLY = "Csak fő bináris";
+FULL_IPA = "Teljes IPA";
+
+LAUNCHING_APPLICATION = "Alkalmazás indítása...";
+COPYING_BUNDLE = "Alkalmazáscsomag másolása...";
+DECRYPTING_BINARY = "Bináris visszafejtése...";
+DECRYPTION_COMPLETED = "Visszafejtés befejezve!";
+BUILDING_IPA = "IPA készítése... (Ez eltarthat egy percig)";
+
+SEARCH_APPLICATIONS = "Alkalmazások keresése";
+
+MANUAL_ENTRY_TITLE = "Kézi csomagazonosító";
+MANUAL_ENTRY_SUBTITLE = "Adja meg a visszafejtendő alkalmazás csomagazonosítóját.";
+
+SHOW_IN_FILZA = "Megjelenítés Filzában";
+SHOW_IN_FILES = "Megjelenítés a Fájlokban";

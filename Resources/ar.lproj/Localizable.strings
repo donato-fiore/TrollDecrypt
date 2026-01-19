@@ -1,0 +1,33 @@
+CANCEL = "إلغاء";
+DECRYPT = "فك التشفير";
+DELETE = "حذف";
+OK = "موافق";
+SUCCESS = "نجاح";
+ERROR = "خطأ";
+DECRYPTING = "جارٍ فك التشفير";
+
+ALTERNATE_ICONS = "أيقونات بديلة";
+
+DECRYPT_APPS = "فك تشفير التطبيقات";
+DECRYPTED_FILES = "الملفات المفكوكة التشفير";
+
+DECRYPTED_IPAS = "ملفات IPA المفكوكة التشفير (%lu)";
+DECRYPTED_BINARIES = "الملفات الثنائية المفكوكة التشفير (%lu)";
+
+DECRYPTION_PROMPT = "هل تريد فك تشفير %@؟";
+MAIN_BINARY_ONLY = "الملف الثنائي الرئيسي فقط";
+FULL_IPA = "ملف IPA كامل";
+
+LAUNCHING_APPLICATION = "جارٍ تشغيل التطبيق...";
+COPYING_BUNDLE = "جارٍ نسخ حزمة التطبيق...";
+DECRYPTING_BINARY = "جارٍ فك تشفير الملف الثنائي...";
+DECRYPTION_COMPLETED = "تم فك التشفير!";
+BUILDING_IPA = "جارٍ إنشاء ملف IPA... (قد يستغرق ذلك دقيقة)";
+
+SEARCH_APPLICATIONS = "بحث عن التطبيقات";
+
+MANUAL_ENTRY_TITLE = "إدخال معرف الحزمة يدويًا";
+MANUAL_ENTRY_SUBTITLE = "أدخل معرف حزمة التطبيق الذي تريد فك تشفيره.";
+
+SHOW_IN_FILZA = "عرض في Filza";
+SHOW_IN_FILES = "عرض في الملفات";

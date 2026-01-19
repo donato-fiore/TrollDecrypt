@@ -1,0 +1,33 @@
+CANCEL = "Cancel·la";
+DECRYPT = "Desxifra";
+DELETE = "Suprimeix";
+OK = "D'acord";
+SUCCESS = "Èxit";
+ERROR = "Error";
+DECRYPTING = "Desxifrant";
+
+ALTERNATE_ICONS = "Icones alternatives";
+
+DECRYPT_APPS = "Desxifra aplicacions";
+DECRYPTED_FILES = "Fitxers desxifrats";
+
+DECRYPTED_IPAS = "IPAs desxifrats (%lu)";
+DECRYPTED_BINARIES = "Binaris desxifrats (%lu)";
+
+DECRYPTION_PROMPT = "Vols desxifrar %@?";
+MAIN_BINARY_ONLY = "Només binari principal";
+FULL_IPA = "IPA complet";
+
+LAUNCHING_APPLICATION = "S'està iniciant l'aplicació...";
+COPYING_BUNDLE = "S'està copiant el paquet de l'aplicació...";
+DECRYPTING_BINARY = "S'està desxifrant el binari...";
+DECRYPTION_COMPLETED = "Desxifrat complet!";
+BUILDING_IPA = "S'està creant l'IPA... (Això pot trigar un minut)";
+
+SEARCH_APPLICATIONS = "Cerca aplicacions";
+
+MANUAL_ENTRY_TITLE = "Identificador de paquet manual";
+MANUAL_ENTRY_SUBTITLE = "Introdueix l'identificador de paquet de l'aplicació que vols desxifrar.";
+
+SHOW_IN_FILZA = "Mostra a Filza";
+SHOW_IN_FILES = "Mostra a Fitxers";

@@ -1,0 +1,33 @@
+CANCEL = "Anuluj";
+DECRYPT = "Odszyfruj";
+DELETE = "Usuń";
+OK = "OK";
+SUCCESS = "Sukces";
+ERROR = "Błąd";
+DECRYPTING = "Odszyfrowywanie";
+
+ALTERNATE_ICONS = "Alternatywne ikony";
+
+DECRYPT_APPS = "Odszyfruj aplikacje";
+DECRYPTED_FILES = "Odszyfrowane pliki";
+
+DECRYPTED_IPAS = "Odszyfrowane IPA (%lu)";
+DECRYPTED_BINARIES = "Odszyfrowane binaria (%lu)";
+
+DECRYPTION_PROMPT = "Czy chcesz odszyfrować %@?";
+MAIN_BINARY_ONLY = "Tylko główny plik binarny";
+FULL_IPA = "Pełne IPA";
+
+LAUNCHING_APPLICATION = "Uruchamianie aplikacji...";
+COPYING_BUNDLE = "Kopiowanie pakietu aplikacji...";
+DECRYPTING_BINARY = "Odszyfrowywanie pliku binarnego...";
+DECRYPTION_COMPLETED = "Odszyfrowywanie zakończone!";
+BUILDING_IPA = "Tworzenie IPA... (To może chwilę potrwać)";
+
+SEARCH_APPLICATIONS = "Szukaj aplikacji";
+
+MANUAL_ENTRY_TITLE = "Ręczny identyfikator pakietu";
+MANUAL_ENTRY_SUBTITLE = "Wprowadź identyfikator pakietu aplikacji, którą chcesz odszyfrować.";
+
+SHOW_IN_FILZA = "Pokaż w Filza";
+SHOW_IN_FILES = "Pokaż w Plikach";
