@@ -1,10 +1,11 @@
 # TrollDecrypt
 iOS IPA Decrypter for TrollStore
 
-## How to use
-1. Download and install TrollDecrypt from [here](https://github.com/donato-fiore/TrollDecrypt/releases)
-2. Choose app you want to decrypt.
-3. Once finished decrypting, you can get the `.ipa` file from inside the app.
+## How do I install TrollDecrypt?
+In order to install TrollDecrypt you can either:
+* Get it on [Havoc](https://havoc.app/package/trolldecrypt)!
+* Download the latest release [here](https://github.com/donato-fiore/TrollDecrypt/releases)
+* Build from source
 
 ## How to build
 1. Install [theos](https://theos.dev/docs/installation)
@@ -16,8 +17,6 @@ make package
 ```
 
 ## Credits / Thanks
-- [TrollDecryptor](https://github.com/wh1te4ever/TrollDecryptor) by wh1te4ever
-- [dumpdecrypted](https://github.com/stefanesser/dumpdecrypted) by Stefan Esser
-- [bfdecrypt](https://github.com/BishopFox/bfdecrypt) by BishopFox
+- [wh1te4ever](https://github.com/wh1te4ever) for TrollDecryptor
 - [opa334](https://github.com/opa334) for some pieces of code
-- App Icon by super.user
+- [super.user](https://superuser.carrd.co) for the original app icon

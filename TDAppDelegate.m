@@ -5,8 +5,8 @@
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
     _window = [[UIWindow alloc] initWithFrame:[UIScreen mainScreen].bounds];
-    _rootViewController = [[UINavigationController alloc] initWithRootViewController:[[TDRootViewController alloc] init]];
-    _window.rootViewController = _rootViewController;
+    TDRootViewController *rootVC = [[TDRootViewController alloc] init];
+    _window.rootViewController = rootVC;
     [_window makeKeyAndVisible];
     return YES;
 }
