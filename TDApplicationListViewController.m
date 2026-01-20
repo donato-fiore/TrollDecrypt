@@ -213,6 +213,14 @@ static inline NSUInteger getEffectiveIconFormat(void) {
     }];
     [alert addAction:decryptAction];
 
+    // iPad popover fix - @NightwindDev
+    UIPopoverPresentationController *popover = alert.popoverPresentationController;
+    if (popover) {
+        popover.sourceView = self.view;
+        popover.sourceRect = [tableView rectForRowAtIndexPath:indexPath];
+        popover.permittedArrowDirections = UIPopoverArrowDirectionAny;
+    }
+
     [self presentViewController:alert animated:YES completion:nil];
     [tableView deselectRowAtIndexPath:indexPath animated:YES];
 }
