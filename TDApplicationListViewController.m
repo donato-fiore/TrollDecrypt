@@ -266,11 +266,6 @@ static inline NSUInteger getEffectiveIconFormat(void) {
                         NSURL *url = [[NSURL URLWithString:@"filza://view"] URLByAppendingPathComponent:[outputURL path]];
                         [[UIApplication sharedApplication] openURL:url options:@{} completionHandler:nil];
                     }]];
-                } else {
-                    [resultAlert addAction:[UIAlertAction actionWithTitle:[Localize localizedStringForKey:@"SHOW_IN_FILES"] style:UIAlertActionStyleDefault handler:^(UIAlertAction *action) {
-                        UIDocumentInteractionController *docController = [UIDocumentInteractionController interactionControllerWithURL:outputURL];
-                        [docController presentPreviewAnimated:YES];
-                    }]];
                 }
             } else {
                 resultAlert = [UIAlertController alertControllerWithTitle:[Localize localizedStringForKey:@"ERROR"] message:error.localizedDescription preferredStyle:UIAlertControllerStyleAlert];
