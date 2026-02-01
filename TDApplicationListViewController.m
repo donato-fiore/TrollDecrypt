@@ -191,7 +191,7 @@ static inline NSUInteger getEffectiveIconFormat(void) {
 
 // TDDecryptionTask
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
-    LSApplicationProxy *application = _allAvailableApplications[indexPath.row];
+    LSApplicationProxy *application = _filteredApplications[indexPath.row];
 
     NSString *title = [Localize localizedStringForKey:@"DECRYPT"];
     NSString *subtitle = [NSString stringWithFormat:[Localize localizedStringForKey:@"DECRYPTION_PROMPT"], [application atl_nameToDisplay]];
