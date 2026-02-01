@@ -1,5 +1,6 @@
 #import "LSBundleProxy+TrollDecrypt.h"
 #import "LSBundleProxy+Private.h"
+#import <mach/mach_error.h>
 
 @implementation LSBundleProxy (TrollDecrypt)
 
