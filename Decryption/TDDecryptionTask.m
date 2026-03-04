@@ -124,6 +124,31 @@ TDDecryptionTaskOptions TDDecryptionTaskDefaultOptions(void) {
             return;
         }
 
+        NSString *originalAppPath = self->_applicationProxy.bundleURL.path;
+        NSString *frameworksPath = [originalAppPath stringByAppendingPathComponent:@"Frameworks"];
+        NSError *fsError = nil;
+        NSArray *frameworkContents = [self->_fileManager contentsOfDirectoryAtPath:frameworksPath error:&fsError];
+        if (!fsError && frameworkContents.count > 0) {
+            NSInteger frameworkCount = 0;
+            for (NSString *item in frameworkContents) {
+                if ([item hasSuffix:@".framework"]) frameworkCount++;
+            }
+            NSInteger currentFrameworkIndex = 0;
+            for (NSString *item in frameworkContents) {
+                if ([item hasSuffix:@".framework"]) {
+                    currentFrameworkIndex++;
+                    NSString *frameworkName = [item stringByDeletingPathExtension]; 
+                    NSString *frameworkBinaryPath = [[frameworksPath stringByAppendingPathComponent:item] stringByAppendingPathComponent:frameworkName]; 
+                    if ([self->_fileManager fileExistsAtPath:frameworkBinaryPath]) {
+                        progress([NSString stringWithFormat:@"Decrypting framework %ld/%ld: %@...", (long)currentFrameworkIndex, (long)frameworkCount, frameworkName]);
+                        if (![self decryptImageAtPath:frameworkBinaryPath forPID:targetPID]) {
+                            NSLog(@"Failed to decrypt framework %@", item);
+                        }
+                    }
+                }
+            }
+        }
+
         NSInteger extensionCount = self->_applicationProxy.plugInKitPlugins.count;
         NSInteger currentExtensionIndex = 0;
 
