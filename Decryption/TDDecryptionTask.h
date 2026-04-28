@@ -4,11 +4,17 @@
 
 @class LSApplicationProxy;
 
+typedef NS_ENUM(NSInteger, TDDecryptionOutputMode) {
+    TDDecryptionOutputModeFullIPA = 0,
+    TDDecryptionOutputModeAppBundleOnly,
+    TDDecryptionOutputModeMainBinaryOnly,
+};
+
 typedef struct {
-    bool decryptBinaryOnly;
+    TDDecryptionOutputMode outputMode;
 } TDDecryptionTaskOptions;
 
-TDDecryptionTaskOptions TDDecryptionTaskOptionsMake(bool decryptBinaryOnly);
+TDDecryptionTaskOptions TDDecryptionTaskOptionsMake(TDDecryptionOutputMode outputMode);
 TDDecryptionTaskOptions TDDecryptionTaskDefaultOptions(void);
 
 @interface TDDecryptionTask : NSObject

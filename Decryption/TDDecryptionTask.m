@@ -12,14 +12,14 @@
 #import <MobileCoreServices/MobileCoreServices.h>
 #import "Extensions/LSBundleProxy+TrollDecrypt.h"
 
-TDDecryptionTaskOptions TDDecryptionTaskOptionsMake(bool decryptBinaryOnly) {
+TDDecryptionTaskOptions TDDecryptionTaskOptionsMake(TDDecryptionOutputMode outputMode) {
     TDDecryptionTaskOptions options = {0};
-    options.decryptBinaryOnly = decryptBinaryOnly;
+    options.outputMode = outputMode;
     return options;
 }
 
 TDDecryptionTaskOptions TDDecryptionTaskDefaultOptions(void) {
-    return TDDecryptionTaskOptionsMake(false);
+    return TDDecryptionTaskOptionsMake(TDDecryptionOutputModeFullIPA);
 }
 
 @implementation TDDecryptionTask {
@@ -54,6 +54,8 @@ TDDecryptionTaskOptions TDDecryptionTaskDefaultOptions(void) {
             });
         };
 
+        BOOL mainBinaryOnly = (options.outputMode == TDDecryptionOutputModeMainBinaryOnly);
+
         if (![self createOutputDirectoryIfNeeded]) {
             NSError *dirError = [TDError errorWithCode:TDErrorCodeUnknown];
             dispatch_async(dispatch_get_main_queue(), ^{
@@ -76,7 +78,7 @@ TDDecryptionTaskOptions TDDecryptionTaskDefaultOptions(void) {
 
         pid_t targetPID = response.pid;
 
-        if (!options.decryptBinaryOnly) {    
+        if (!mainBinaryOnly) {    
             progress([Localize localizedStringForKey:@"COPYING_BUNDLE"]);
             if (![self _copyApplicationBundle]) {
                 NSError *copyError = [TDError errorWithCode:TDErrorCodeApplicationBundleCopyFailed];
@@ -93,7 +95,7 @@ TDDecryptionTaskOptions TDDecryptionTaskDefaultOptions(void) {
 
         BOOL status = false;
         NSString *fullOutputPath = nil;
-        if (options.decryptBinaryOnly) {
+        if (mainBinaryOnly) {
             NSLog(@"Decrypting main binary only to output directory: %@", ROOT_OUTPUT_PATH);
             NSLog(@"image path: %@", imagePath);
             NSString *fileName = [NSString stringWithFormat:@"%@_%@_decrypted",
@@ -114,7 +116,7 @@ TDDecryptionTaskOptions TDDecryptionTaskDefaultOptions(void) {
             return;
         }
 
-        if (options.decryptBinaryOnly) {
+        if (mainBinaryOnly) {
             kill(targetPID, SIGKILL);
             progress([Localize localizedStringForKey:@"DECRYPTION_COMPLETED"]);
 
