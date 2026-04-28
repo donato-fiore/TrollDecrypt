@@ -16,6 +16,7 @@ DECRYPTED_BINARIES = "Tệp nhị phân đã giải mã (%lu)";
 
 DECRYPTION_PROMPT = "Bạn có muốn giải mã %@ không?";
 MAIN_BINARY_ONLY = "Chỉ tệp nhị phân chính";
+APP_BUNDLE_ONLY = "App Bundle Only";
 FULL_IPA = "Toàn bộ IPA";
 
 LAUNCHING_APPLICATION = "Đang khởi chạy ứng dụng...";

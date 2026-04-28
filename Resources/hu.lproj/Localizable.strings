@@ -16,6 +16,7 @@ DECRYPTED_BINARIES = "Visszafejtett binárisok (%lu)";
 
 DECRYPTION_PROMPT = "Szeretné visszafejteni ezt: %@?";
 MAIN_BINARY_ONLY = "Csak fő bináris";
+APP_BUNDLE_ONLY = "App Bundle Only";
 FULL_IPA = "Teljes IPA";
 
 LAUNCHING_APPLICATION = "Alkalmazás indítása...";

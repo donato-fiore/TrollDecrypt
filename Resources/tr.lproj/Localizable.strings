@@ -16,6 +16,7 @@ DECRYPTED_BINARIES = "Şifresi Çözülmüş İkili Dosyalar (%lu)";
 
 DECRYPTION_PROMPT = "%@ uygulamasının şifresini çözmek istiyor musunuz?";
 MAIN_BINARY_ONLY = "Sadece Ana İkili Dosya";
+APP_BUNDLE_ONLY = "App Bundle Only";
 FULL_IPA = "Tüm IPA";
 
 LAUNCHING_APPLICATION = "Uygulama Başlatılıyor...";

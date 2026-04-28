@@ -16,6 +16,7 @@ DECRYPTED_BINARIES = "ไฟล์ไบนารีที่ถอดรหั�
 
 DECRYPTION_PROMPT = "คุณต้องการถอดรหัส %@ หรือไม่?";
 MAIN_BINARY_ONLY = "เฉพาะไฟล์ไบนารีหลัก";
+APP_BUNDLE_ONLY = "App Bundle Only";
 FULL_IPA = "IPA ทั้งหมด";
 
 LAUNCHING_APPLICATION = "กำลังเปิดแอปพลิเคชัน...";

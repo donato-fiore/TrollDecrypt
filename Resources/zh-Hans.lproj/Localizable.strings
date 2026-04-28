@@ -16,6 +16,7 @@ DECRYPTED_BINARIES = "已解密二进制文件（%lu）";
 
 DECRYPTION_PROMPT = "您要解密 %@ 吗？";
 MAIN_BINARY_ONLY = "仅主二进制文件";
+APP_BUNDLE_ONLY = "App Bundle Only";
 FULL_IPA = "完整 IPA";
 
 LAUNCHING_APPLICATION = "正在启动应用...";

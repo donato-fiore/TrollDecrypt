@@ -16,6 +16,7 @@ DECRYPTED_BINARIES = "Binaires déchiffrés (%lu)";
 
 DECRYPTION_PROMPT = "Voulez-vous déchiffrer %@ ?";
 MAIN_BINARY_ONLY = "Binaire principal uniquement";
+APP_BUNDLE_ONLY = "App Bundle Only";
 FULL_IPA = "IPA complet";
 
 LAUNCHING_APPLICATION = "Lancement de l’application...";

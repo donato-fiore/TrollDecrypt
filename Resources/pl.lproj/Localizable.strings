@@ -16,6 +16,7 @@ DECRYPTED_BINARIES = "Odszyfrowane binaria (%lu)";
 
 DECRYPTION_PROMPT = "Czy chcesz odszyfrować %@?";
 MAIN_BINARY_ONLY = "Tylko główny plik binarny";
+APP_BUNDLE_ONLY = "App Bundle Only";
 FULL_IPA = "Pełne IPA";
 
 LAUNCHING_APPLICATION = "Uruchamianie aplikacji...";

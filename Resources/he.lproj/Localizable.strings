@@ -16,6 +16,7 @@ DECRYPTED_BINARIES = "בינאריים מפוענחים (%lu)";
 
 DECRYPTION_PROMPT = "האם ברצונך לפענח את %@?";
 MAIN_BINARY_ONLY = "בינארי ראשי בלבד";
+APP_BUNDLE_ONLY = "App Bundle Only";
 FULL_IPA = "IPA מלא";
 
 LAUNCHING_APPLICATION = "מפעיל את האפליקציה...";

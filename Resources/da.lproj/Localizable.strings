@@ -16,6 +16,7 @@ DECRYPTED_BINARIES = "Dekrypterede binære filer (%lu)";
 
 DECRYPTION_PROMPT = "Vil du dekryptere %@?";
 MAIN_BINARY_ONLY = "Kun hovedbinær";
+APP_BUNDLE_ONLY = "App Bundle Only";
 FULL_IPA = "Fuld IPA";
 
 LAUNCHING_APPLICATION = "Starter applikation...";

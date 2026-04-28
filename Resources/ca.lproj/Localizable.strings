@@ -16,6 +16,7 @@ DECRYPTED_BINARIES = "Binaris desxifrats (%lu)";
 
 DECRYPTION_PROMPT = "Vols desxifrar %@?";
 MAIN_BINARY_ONLY = "Només binari principal";
+APP_BUNDLE_ONLY = "App Bundle Only";
 FULL_IPA = "IPA complet";
 
 LAUNCHING_APPLICATION = "S'està iniciant l'aplicació...";
