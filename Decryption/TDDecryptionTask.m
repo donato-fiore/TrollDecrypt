@@ -55,6 +55,8 @@ TDDecryptionTaskOptions TDDecryptionTaskDefaultOptions(void) {
         };
 
         BOOL mainBinaryOnly = (options.outputMode == TDDecryptionOutputModeMainBinaryOnly);
+        BOOL appBundleOnly = (options.outputMode == TDDecryptionOutputModeAppBundleOnly);
+        BOOL fullIPA = (options.outputMode == TDDecryptionOutputModeFullIPA);
 
         if (![self createOutputDirectoryIfNeeded]) {
             NSError *dirError = [TDError errorWithCode:TDErrorCodeUnknown];
@@ -62,6 +64,24 @@ TDDecryptionTaskOptions TDDecryptionTaskDefaultOptions(void) {
                 if (completionHandler) completionHandler(NO, nil, dirError);
             });
             return;
+        }
+
+        NSString *appBundleOutputName =
+            [NSString stringWithFormat:@"%@_%@_decrypted.app",
+             bundleIdentifier, [self->_applicationProxy atl_shortVersionString]];
+        NSString *appBundleOutputPath = [ROOT_OUTPUT_PATH stringByAppendingPathComponent:appBundleOutputName];
+
+        if (appBundleOnly && [self->_fileManager fileExistsAtPath:appBundleOutputPath]) {
+            NSError *removeError = nil;
+            [self->_fileManager removeItemAtPath:appBundleOutputPath error:&removeError];
+            if (removeError) {
+                NSLog(@"Failed to remove existing App Bundle output at path %@, error: %@", appBundleOutputPath, removeError);
+                NSError *outputError = [TDError errorWithCode:TDErrorCodeAppBundleOutputFailed];
+                dispatch_async(dispatch_get_main_queue(), ^{
+                    if (completionHandler) completionHandler(NO, nil, outputError);
+                });
+                return;
+            }
         }
 
         progress([Localize localizedStringForKey:@"LAUNCHING_APPLICATION"]);
