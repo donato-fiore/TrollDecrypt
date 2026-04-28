@@ -22,6 +22,7 @@ FULL_IPA = "Ολόκληρο IPA";
 LAUNCHING_APPLICATION = "Εκκίνηση Εφαρμογής...";
 COPYING_BUNDLE = "Αντιγραφή Πακέτου Εφαρμογής...";
 DECRYPTING_BINARY = "Αποκρυπτογράφηση Δυαδικού...";
+SAVING_APP_BUNDLE = "Saving app bundle...";
 DECRYPTION_COMPLETED = "Η αποκρυπτογράφηση ολοκληρώθηκε!";
 BUILDING_IPA = "Δημιουργία IPA... (Αυτό μπορεί να διαρκέσει ένα λεπτό)";
 

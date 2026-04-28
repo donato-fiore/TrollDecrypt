@@ -22,6 +22,7 @@ FULL_IPA = "IPA ทั้งหมด";
 LAUNCHING_APPLICATION = "กำลังเปิดแอปพลิเคชัน...";
 COPYING_BUNDLE = "กำลังคัดลอกชุดแอปพลิเคชัน...";
 DECRYPTING_BINARY = "กำลังถอดรหัสไบนารี...";
+SAVING_APP_BUNDLE = "Saving app bundle...";
 DECRYPTION_COMPLETED = "ถอดรหัสเสร็จสิ้น!";
 BUILDING_IPA = "กำลังสร้างไฟล์ IPA... (อาจใช้เวลาสักครู่)";
 

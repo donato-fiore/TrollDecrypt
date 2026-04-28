@@ -22,6 +22,7 @@ FULL_IPA = "ملف IPA كامل";
 LAUNCHING_APPLICATION = "جارٍ تشغيل التطبيق...";
 COPYING_BUNDLE = "جارٍ نسخ حزمة التطبيق...";
 DECRYPTING_BINARY = "جارٍ فك تشفير الملف الثنائي...";
+SAVING_APP_BUNDLE = "Saving app bundle...";
 DECRYPTION_COMPLETED = "تم فك التشفير!";
 BUILDING_IPA = "جارٍ إنشاء ملف IPA... (قد يستغرق ذلك دقيقة)";
 

@@ -22,6 +22,7 @@ FULL_IPA = "पूर्ण IPA";
 LAUNCHING_APPLICATION = "एप्लिकेशन लॉन्च किया जा रहा है...";
 COPYING_BUNDLE = "एप्लिकेशन बंडल कॉपी किया जा रहा है...";
 DECRYPTING_BINARY = "बाइनरी डिक्रिप्ट की जा रही है...";
+SAVING_APP_BUNDLE = "Saving app bundle...";
 DECRYPTION_COMPLETED = "डिक्रिप्शन पूर्ण हुआ!";
 BUILDING_IPA = "IPA बनाया जा रहा है... (इसमें एक मिनट लग सकता है)";
 

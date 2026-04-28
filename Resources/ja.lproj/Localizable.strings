@@ -22,6 +22,7 @@ FULL_IPA = "フルIPA";
 LAUNCHING_APPLICATION = "アプリを起動中...";
 COPYING_BUNDLE = "アプリバンドルをコピー中...";
 DECRYPTING_BINARY = "バイナリを復号中...";
+SAVING_APP_BUNDLE = "Saving app bundle...";
 DECRYPTION_COMPLETED = "復号完了！";
 BUILDING_IPA = "IPAを作成中...（しばらくお待ちください）";
 

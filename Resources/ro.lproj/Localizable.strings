@@ -22,6 +22,7 @@ FULL_IPA = "IPA complet";
 LAUNCHING_APPLICATION = "Se lansează aplicația...";
 COPYING_BUNDLE = "Se copiază pachetul aplicației...";
 DECRYPTING_BINARY = "Se decriptează binarul...";
+SAVING_APP_BUNDLE = "Saving app bundle...";
 DECRYPTION_COMPLETED = "Decriptare finalizată!";
 BUILDING_IPA = "Se creează IPA... (Acest proces poate dura un minut)";
 

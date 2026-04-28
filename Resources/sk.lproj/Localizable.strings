@@ -22,6 +22,7 @@ FULL_IPA = "Celé IPA";
 LAUNCHING_APPLICATION = "Spúšťanie aplikácie...";
 COPYING_BUNDLE = "Kopírovanie balíka aplikácie...";
 DECRYPTING_BINARY = "Dešifrovanie binárky...";
+SAVING_APP_BUNDLE = "Saving app bundle...";
 DECRYPTION_COMPLETED = "Dešifrovanie dokončené!";
 BUILDING_IPA = "Vytváranie IPA... (Môže to chvíľu trvať)";
 

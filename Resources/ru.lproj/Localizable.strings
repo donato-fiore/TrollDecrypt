@@ -22,6 +22,7 @@ FULL_IPA = "Полный IPA";
 LAUNCHING_APPLICATION = "Запуск приложения...";
 COPYING_BUNDLE = "Копирование пакета приложения...";
 DECRYPTING_BINARY = "Расшифровка бинарного файла...";
+SAVING_APP_BUNDLE = "Saving app bundle...";
 DECRYPTION_COMPLETED = "Расшифровка завершена!";
 BUILDING_IPA = "Создание IPA... (Это может занять минуту)";
 

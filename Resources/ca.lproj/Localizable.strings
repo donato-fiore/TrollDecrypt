@@ -22,6 +22,7 @@ FULL_IPA = "IPA complet";
 LAUNCHING_APPLICATION = "S'està iniciant l'aplicació...";
 COPYING_BUNDLE = "S'està copiant el paquet de l'aplicació...";
 DECRYPTING_BINARY = "S'està desxifrant el binari...";
+SAVING_APP_BUNDLE = "Saving app bundle...";
 DECRYPTION_COMPLETED = "Desxifrat complet!";
 BUILDING_IPA = "S'està creant l'IPA... (Això pot trigar un minut)";
 

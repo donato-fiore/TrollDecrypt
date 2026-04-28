@@ -22,6 +22,7 @@ FULL_IPA = "전체 IPA";
 LAUNCHING_APPLICATION = "애플리케이션 실행 중...";
 COPYING_BUNDLE = "애플리케이션 번들 복사 중...";
 DECRYPTING_BINARY = "바이너리 복호화 중...";
+SAVING_APP_BUNDLE = "Saving app bundle...";
 DECRYPTION_COMPLETED = "복호화 완료!";
 BUILDING_IPA = "IPA 생성 중... (잠시만 기다려주세요)";
 

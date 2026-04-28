@@ -22,6 +22,7 @@ FULL_IPA = "Tüm IPA";
 LAUNCHING_APPLICATION = "Uygulama Başlatılıyor...";
 COPYING_BUNDLE = "Uygulama Paketi Kopyalanıyor...";
 DECRYPTING_BINARY = "İkili Dosya Şifresi Çözülüyor...";
+SAVING_APP_BUNDLE = "Saving app bundle...";
 DECRYPTION_COMPLETED = "Şifre Çözme Tamamlandı!";
 BUILDING_IPA = "IPA Oluşturuluyor... (Bu biraz zaman alabilir)";
 

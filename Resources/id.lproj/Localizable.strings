@@ -22,6 +22,7 @@ FULL_IPA = "IPA Lengkap";
 LAUNCHING_APPLICATION = "Meluncurkan Aplikasi...";
 COPYING_BUNDLE = "Menyalin Bundle Aplikasi...";
 DECRYPTING_BINARY = "Mendekripsi Biner...";
+SAVING_APP_BUNDLE = "Saving app bundle...";
 DECRYPTION_COMPLETED = "Dekripsi Selesai!";
 BUILDING_IPA = "Membangun IPA... (Ini mungkin memakan waktu satu menit)";
 

@@ -22,6 +22,7 @@ FULL_IPA = "Cijeli IPA";
 LAUNCHING_APPLICATION = "Pokretanje aplikacije...";
 COPYING_BUNDLE = "Kopiranje paketa aplikacije...";
 DECRYPTING_BINARY = "Dekriptiranje binara...";
+SAVING_APP_BUNDLE = "Saving app bundle...";
 DECRYPTION_COMPLETED = "Dekriptiranje završeno!";
 BUILDING_IPA = "Izrada IPA-a... (Ovo može potrajati minutu)";
 

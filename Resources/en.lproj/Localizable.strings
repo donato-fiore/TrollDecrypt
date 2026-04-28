@@ -22,6 +22,7 @@ FULL_IPA = "Full IPA";
 LAUNCHING_APPLICATION = "Launching Application...";
 COPYING_BUNDLE = "Copying Application Bundle...";
 DECRYPTING_BINARY = "Decrypting Binary...";
+SAVING_APP_BUNDLE = "Saving app bundle...";
 DECRYPTION_COMPLETED = "Decryption Complete!";
 BUILDING_IPA = "Building IPA... (This might take a minute)";
 

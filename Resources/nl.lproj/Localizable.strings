@@ -22,6 +22,7 @@ FULL_IPA = "Volledige IPA";
 LAUNCHING_APPLICATION = "Applicatie wordt gestart...";
 COPYING_BUNDLE = "Applicatiebundel wordt gekopieerd...";
 DECRYPTING_BINARY = "Binary wordt ontsleuteld...";
+SAVING_APP_BUNDLE = "Saving app bundle...";
 DECRYPTION_COMPLETED = "Ontsleuteling voltooid!";
 BUILDING_IPA = "IPA wordt gebouwd... (Dit kan een minuut duren)";
 
