@@ -84,6 +84,17 @@ TDDecryptionTaskOptions TDDecryptionTaskDefaultOptions(void) {
             }
         }
 
+        NSMutableArray<NSNumber *> *launchedPIDs = [NSMutableArray array];
+        void (^cleanupLaunchedProcesses)(void) = ^{
+            for (NSNumber *pidNumber in launchedPIDs) {
+                pid_t pid = (pid_t)pidNumber.intValue;
+                if (pid > 0) {
+                    kill(pid, SIGKILL);
+                }
+            }
+            [launchedPIDs removeAllObjects];
+        };
+
         progress([Localize localizedStringForKey:@"LAUNCHING_APPLICATION"]);
 
         LaunchdResponse_t response = [self->_applicationProxy td_launchProcess];
@@ -97,11 +108,13 @@ TDDecryptionTaskOptions TDDecryptionTaskDefaultOptions(void) {
         }
 
         pid_t targetPID = response.pid;
+        [launchedPIDs addObject:@(targetPID)];
 
         if (!mainBinaryOnly) {    
             progress([Localize localizedStringForKey:@"COPYING_BUNDLE"]);
             if (![self _copyApplicationBundle]) {
                 NSError *copyError = [TDError errorWithCode:TDErrorCodeApplicationBundleCopyFailed];
+                cleanupLaunchedProcesses();
                 dispatch_async(dispatch_get_main_queue(), ^{
                     if (completionHandler) completionHandler(NO, nil, copyError);
                 });
@@ -130,6 +143,7 @@ TDDecryptionTaskOptions TDDecryptionTaskDefaultOptions(void) {
 
         if (!status) {
             NSError *decryptError = [TDError errorWithCode:TDErrorCodeBinaryDecryptionFailed];
+            cleanupLaunchedProcesses();
             dispatch_async(dispatch_get_main_queue(), ^{
                 if (completionHandler) completionHandler(NO, nil, decryptError);
             });
@@ -137,7 +151,7 @@ TDDecryptionTaskOptions TDDecryptionTaskDefaultOptions(void) {
         }
 
         if (mainBinaryOnly) {
-            kill(targetPID, SIGKILL);
+            cleanupLaunchedProcesses();
             progress([Localize localizedStringForKey:@"DECRYPTION_COMPLETED"]);
 
             dispatch_async(dispatch_get_main_queue(), ^{
@@ -180,6 +194,7 @@ TDDecryptionTaskOptions TDDecryptionTaskDefaultOptions(void) {
                 NSLog(@"Failed to launch extension %@", extension.bundleIdentifier);
                 continue;
             }
+            [launchedPIDs addObject:@(extensionResponse.pid)];
 
             currentExtensionIndex++;
             progress([NSString stringWithFormat:@"Decrypting extension %ld/%ld...",
@@ -189,8 +204,6 @@ TDDecryptionTaskOptions TDDecryptionTaskDefaultOptions(void) {
             if (![self decryptImageAtPath:extensionImagePath forPID:extensionResponse.pid]) {
                 NSLog(@"Failed to decrypt main executable for extension %@", extension.bundleIdentifier);
             }
-
-            kill(extensionResponse.pid, SIGKILL);
         }
 
         progress([Localize localizedStringForKey:@"BUILDING_IPA"]);
@@ -200,13 +213,14 @@ TDDecryptionTaskOptions TDDecryptionTaskDefaultOptions(void) {
 
         if (![self _buildIPAWithName:outputIPAName]) {
             NSError *ipaError = [TDError errorWithCode:TDErrorCodeIPAConstructionFailed];
+            cleanupLaunchedProcesses();
             dispatch_async(dispatch_get_main_queue(), ^{
                 if (completionHandler) completionHandler(NO, nil, ipaError);
             });
             return;
         }
 
-        kill(targetPID, SIGKILL);
+        cleanupLaunchedProcesses();
         progress([Localize localizedStringForKey:@"DECRYPTION_COMPLETED"]);
 
         NSString *ipaPath = [ROOT_OUTPUT_PATH stringByAppendingPathComponent:outputIPAName];
