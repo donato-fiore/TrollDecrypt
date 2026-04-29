@@ -12,6 +12,7 @@ DECRYPT_APPS = "פענוח אפליקציות";
 DECRYPTED_FILES = "קבצים מפוענחים";
 
 DECRYPTED_IPAS = "קבצי IPA מפוענחים (%lu)";
+DECRYPTED_APP_BUNDLES = "Decrypted App Bundles (%lu)";
 DECRYPTED_BINARIES = "בינאריים מפוענחים (%lu)";
 
 DECRYPTION_PROMPT = "האם ברצונך לפענח את %@?";
@@ -32,4 +33,5 @@ MANUAL_ENTRY_TITLE = "מזהה חבילה ידני";
 MANUAL_ENTRY_SUBTITLE = "הזן את מזהה החבילה של האפליקציה שברצונך לפענח.";
 
 SHOW_IN_FILZA = "הצג ב-Filza";
+COPY_PATH = "Copy Path";
 SHOW_IN_FILES = "הצג בקבצים";

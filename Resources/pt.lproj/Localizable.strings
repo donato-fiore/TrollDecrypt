@@ -12,6 +12,7 @@ DECRYPT_APPS = "Descriptografar Apps";
 DECRYPTED_FILES = "Arquivos Descriptografados";
 
 DECRYPTED_IPAS = "IPAs Descriptografados (%lu)";
+DECRYPTED_APP_BUNDLES = "Decrypted App Bundles (%lu)";
 DECRYPTED_BINARIES = "Binários Descriptografados (%lu)";
 
 DECRYPTION_PROMPT = "Você deseja descriptografar %@?";
@@ -32,4 +33,5 @@ MANUAL_ENTRY_TITLE = "Identificador do Pacote Manual";
 MANUAL_ENTRY_SUBTITLE = "Digite o identificador do pacote do aplicativo que você deseja descriptografar.";
 
 SHOW_IN_FILZA = "Mostrar no Filza";
+COPY_PATH = "Copy Path";
 SHOW_IN_FILES = "Mostrar em Arquivos";

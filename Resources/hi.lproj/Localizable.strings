@@ -12,6 +12,7 @@ DECRYPT_APPS = "ऐप्स डिक्रिप्ट करें";
 DECRYPTED_FILES = "डिक्रिप्ट की गई फाइलें";
 
 DECRYPTED_IPAS = "डिक्रिप्ट की गई IPA (%lu)";
+DECRYPTED_APP_BUNDLES = "Decrypted App Bundles (%lu)";
 DECRYPTED_BINARIES = "डिक्रिप्ट किए गए बाइनरी (%lu)";
 
 DECRYPTION_PROMPT = "क्या आप %@ को डिक्रिप्ट करना चाहते हैं?";
@@ -32,4 +33,5 @@ MANUAL_ENTRY_TITLE = "मैन्युअल बंडल पहचानक�
 MANUAL_ENTRY_SUBTITLE = "उस एप्लिकेशन का बंडल पहचानकर्ता दर्ज करें जिसे आप डिक्रिप्ट करना चाहते हैं।";
 
 SHOW_IN_FILZA = "Filza में दिखाएं";
+COPY_PATH = "Copy Path";
 SHOW_IN_FILES = "Files में दिखाएं";
