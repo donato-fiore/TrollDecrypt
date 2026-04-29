@@ -95,6 +95,23 @@ TDDecryptionTaskOptions TDDecryptionTaskDefaultOptions(void) {
             [launchedPIDs removeAllObjects];
         };
 
+        void (^cleanupAppBundleOutput)(void) = ^{
+            if (!appBundleOnly) return;
+
+            NSError *cleanupError = nil;
+            if ([self->_fileManager fileExistsAtPath:appBundleOutputPath]) {
+                [self->_fileManager removeItemAtPath:appBundleOutputPath error:&cleanupError];
+                if (cleanupError) NSLog(@"Failed to remove partial App Bundle output at path %@, error: %@", appBundleOutputPath, cleanupError);
+            }
+
+            cleanupError = nil;
+            NSString *workingDirectoryPath = self->_workingDirectoryPath ?: [ROOT_OUTPUT_PATH stringByAppendingPathComponent:@".work"];
+            if ([self->_fileManager fileExistsAtPath:workingDirectoryPath]) {
+                [self->_fileManager removeItemAtPath:workingDirectoryPath error:&cleanupError];
+                if (cleanupError) NSLog(@"Failed to remove App Bundle working directory at path %@, error: %@", workingDirectoryPath, cleanupError);
+            }
+        };
+
         progress([Localize localizedStringForKey:@"LAUNCHING_APPLICATION"]);
 
         LaunchdResponse_t response = [self->_applicationProxy td_launchProcess];
@@ -114,6 +131,7 @@ TDDecryptionTaskOptions TDDecryptionTaskDefaultOptions(void) {
             progress([Localize localizedStringForKey:@"COPYING_BUNDLE"]);
             if (![self _copyApplicationBundle]) {
                 NSError *copyError = [TDError errorWithCode:TDErrorCodeApplicationBundleCopyFailed];
+                cleanupAppBundleOutput();
                 cleanupLaunchedProcesses();
                 dispatch_async(dispatch_get_main_queue(), ^{
                     if (completionHandler) completionHandler(NO, nil, copyError);
@@ -143,6 +161,7 @@ TDDecryptionTaskOptions TDDecryptionTaskDefaultOptions(void) {
 
         if (!status) {
             NSError *decryptError = [TDError errorWithCode:TDErrorCodeBinaryDecryptionFailed];
+            cleanupAppBundleOutput();
             cleanupLaunchedProcesses();
             dispatch_async(dispatch_get_main_queue(), ^{
                 if (completionHandler) completionHandler(NO, nil, decryptError);
@@ -214,19 +233,8 @@ TDDecryptionTaskOptions TDDecryptionTaskDefaultOptions(void) {
             if (moveError) {
                 NSLog(@"Failed to save App Bundle output at path %@, error: %@", appBundleOutputPath, moveError);
 
-                NSError *cleanupError = nil;
-                if ([self->_fileManager fileExistsAtPath:appBundleOutputPath]) {
-                    [self->_fileManager removeItemAtPath:appBundleOutputPath error:&cleanupError];
-                    if (cleanupError) NSLog(@"Failed to remove App Bundle output after save failure at path %@, error: %@", appBundleOutputPath, cleanupError);
-                }
-
-                cleanupError = nil;
-                if (self->_workingDirectoryPath && [self->_fileManager fileExistsAtPath:self->_workingDirectoryPath]) {
-                    [self->_fileManager removeItemAtPath:self->_workingDirectoryPath error:&cleanupError];
-                    if (cleanupError) NSLog(@"Failed to clean up working directory after App Bundle output failure: %@, error: %@", self->_workingDirectoryPath, cleanupError);
-                }
-
                 NSError *outputError = [TDError errorWithCode:TDErrorCodeAppBundleOutputFailed];
+                cleanupAppBundleOutput();
                 cleanupLaunchedProcesses();
                 dispatch_async(dispatch_get_main_queue(), ^{
                     if (completionHandler) completionHandler(NO, nil, outputError);
@@ -278,6 +286,7 @@ TDDecryptionTaskOptions TDDecryptionTaskDefaultOptions(void) {
 
         NSLog(@"Unknown output mode: %ld", (long)options.outputMode);
         NSError *unknownError = [TDError errorWithCode:TDErrorCodeUnknown];
+        cleanupAppBundleOutput();
         cleanupLaunchedProcesses();
         dispatch_async(dispatch_get_main_queue(), ^{
             if (completionHandler) completionHandler(NO, nil, unknownError);
