@@ -285,6 +285,13 @@ static inline NSUInteger getEffectiveIconFormat(void) {
                         [[UIApplication sharedApplication] openURL:url options:@{} completionHandler:nil];
                     }]];
                 }
+
+                BOOL appBundleOnly = (options.outputMode == TDDecryptionOutputModeAppBundleOnly);
+                if (appBundleOnly) {
+                    [resultAlert addAction:[UIAlertAction actionWithTitle:[Localize localizedStringForKey:@"COPY_PATH"] style:UIAlertActionStyleDefault handler:^(UIAlertAction *action) {
+                        [UIPasteboard generalPasteboard].string = outputURL.path;
+                    }]];
+                }
             } else {
                 resultAlert = [UIAlertController alertControllerWithTitle:[Localize localizedStringForKey:@"ERROR"] message:error.localizedDescription preferredStyle:UIAlertControllerStyleAlert];
             }
