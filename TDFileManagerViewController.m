@@ -235,9 +235,20 @@
 }
 
 - (UISwipeActionsConfiguration *)tableView:(UITableView *)tableView trailingSwipeActionsConfigurationForRowAtIndexPath:(NSIndexPath *)indexPath {
-    UIContextualAction *deleteAction = [UIContextualAction contextualActionWithStyle:UIContextualActionStyleDestructive title:[Localize localizedStringForKey:@"Delete"] handler:^(UIContextualAction *action, __kindof UIView *sourceView, void (^completionHandler)(BOOL)) {
+    UIContextualAction *deleteAction = [UIContextualAction contextualActionWithStyle:UIContextualActionStyleDestructive title:[Localize localizedStringForKey:@"DELETE"] handler:^(UIContextualAction *action, __kindof UIView *sourceView, void (^completionHandler)(BOOL)) {
         NSURL *fileURL = [self _outputURLForIndexPath:indexPath];
-        [[NSFileManager defaultManager] removeItemAtURL:fileURL error:nil];
+        NSError *removeError = nil;
+        BOOL removed = [[NSFileManager defaultManager] removeItemAtURL:fileURL error:&removeError];
+        if (!removed) {
+            completionHandler(NO);
+
+            UIAlertController *alert = [UIAlertController alertControllerWithTitle:[Localize localizedStringForKey:@"ERROR"]
+                                                                           message:removeError.localizedDescription
+                                                                    preferredStyle:UIAlertControllerStyleAlert];
+            [alert addAction:[UIAlertAction actionWithTitle:[Localize localizedStringForKey:@"OK"] style:UIAlertActionStyleDefault handler:nil]];
+            [self presentViewController:alert animated:YES completion:nil];
+            return;
+        }
 
         [self reload];
 
