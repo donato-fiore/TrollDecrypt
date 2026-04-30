@@ -7,13 +7,14 @@
 @implementation TDFileManagerViewController {
     UIView *_noFilesInfoView;
     NSMutableArray<NSURL *> *_decryptedIPAURLs;
+    NSMutableArray<NSURL *> *_decryptedAppBundleURLs;
     NSMutableArray<NSURL *> *_decryptedBinaries;
 }
 
 - (instancetype)init {
     self = [super init];
     if (self) {
-        [self loadDecryptedIPAs];
+        [self loadDecryptedOutputs];
     }
     return self;
 }
@@ -32,8 +33,9 @@
     [self reload];
 }
 
-- (void)loadDecryptedIPAs {
+- (void)loadDecryptedOutputs {
     NSMutableArray<NSURL *> *decryptedIPAURLs = [NSMutableArray new];
+    NSMutableArray<NSURL *> *decryptedAppBundleURLs = [NSMutableArray new];
     NSMutableArray<NSURL *> *decryptedBinaries = [NSMutableArray new];
 
     NSArray *files = [[NSFileManager defaultManager] contentsOfDirectoryAtPath:ROOT_OUTPUT_PATH error:nil];
@@ -41,7 +43,14 @@
     for (NSString *filename in files) {
         NSURL *fileURL = [[NSURL fileURLWithPath:ROOT_OUTPUT_PATH] URLByAppendingPathComponent:filename];
         BOOL isDirectory = NO;
-        if (![[NSFileManager defaultManager] fileExistsAtPath:fileURL.path isDirectory:&isDirectory] || isDirectory) {
+        if (![[NSFileManager defaultManager] fileExistsAtPath:fileURL.path isDirectory:&isDirectory]) {
+            continue;
+        }
+
+        if (isDirectory) {
+            if ([fileURL.pathExtension.lowercaseString isEqualToString:@"app"]) {
+                [decryptedAppBundleURLs addObject:fileURL];
+            }
             continue;
         }
 
@@ -73,18 +82,19 @@
     }
 
     _decryptedIPAURLs = [decryptedIPAURLs copy];
+    _decryptedAppBundleURLs = [decryptedAppBundleURLs copy];
     _decryptedBinaries = [decryptedBinaries copy];
 }
 
 - (void)reload {
-    [self loadDecryptedIPAs];
+    [self loadDecryptedOutputs];
     [self.tableView reloadData];
     [self.refreshControl endRefreshing];
     [self updateEmptyState];
 }
 
 - (void)updateEmptyState {
-    if (_decryptedIPAURLs.count == 0 && _decryptedBinaries.count == 0) {
+    if (_decryptedIPAURLs.count == 0 && _decryptedAppBundleURLs.count == 0 && _decryptedBinaries.count == 0) {
         self.tableView.backgroundView = [self noFilesInfoView];
     } else {
         self.tableView.backgroundView = nil;
@@ -92,12 +102,14 @@
 }
 
 - (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView {
-    return 2;
+    return 3;
 }
 
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
     if (section == 0) {
         return _decryptedIPAURLs.count;
+    } else if (section == 1) {
+        return _decryptedAppBundleURLs.count;
     } else {
         return _decryptedBinaries.count;
     }
@@ -109,6 +121,9 @@
     if (section == 0) {
         format = [Localize localizedStringForKey:@"DECRYPTED_IPAS"];
         count = _decryptedIPAURLs.count;
+    } else if (section == 1) {
+        format = [Localize localizedStringForKey:@"DECRYPTED_APP_BUNDLES"];
+        count = _decryptedAppBundleURLs.count;
     } else {
         format = [Localize localizedStringForKey:@"DECRYPTED_BINARIES"];
         count = _decryptedBinaries.count;
@@ -117,23 +132,55 @@
     return [NSString stringWithFormat:format, (unsigned long)count];
 }
 
+- (NSURL *)_outputURLForIndexPath:(NSIndexPath *)indexPath {
+    if (indexPath.section == 0) return _decryptedIPAURLs[indexPath.row];
+    if (indexPath.section == 1) return _decryptedAppBundleURLs[indexPath.row];
+    return _decryptedBinaries[indexPath.row];
+}
+
+- (BOOL)_indexPathIsAppBundle:(NSIndexPath *)indexPath {
+    return indexPath.section == 1;
+}
+
+- (unsigned long long)_recursiveSizeOfDirectoryAtURL:(NSURL *)url {
+    unsigned long long totalSize = 0;
+    NSFileManager *fileManager = [NSFileManager defaultManager];
+    NSDirectoryEnumerator *enumerator =
+        [fileManager enumeratorAtURL:url
+          includingPropertiesForKeys:@[ NSURLFileSizeKey ]
+                             options:0
+                        errorHandler:^BOOL(NSURL *unreadableURL, NSError *error) {
+                            NSLog(@"Skipping unreadable output item %@: %@", unreadableURL.path, error);
+                            return YES;
+                        }];
+
+    for (NSURL *itemURL in enumerator) {
+        NSNumber *fileSize = nil;
+        if ([itemURL getResourceValue:&fileSize forKey:NSURLFileSizeKey error:nil]) {
+            totalSize += fileSize.unsignedLongLongValue;
+        }
+    }
+    return totalSize;
+}
+
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
     UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:@"DecryptedFileCell"];
     if (!cell) cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleSubtitle reuseIdentifier:@"DecryptedFileCell"];
 
-    NSURL *fileURL;
+    NSURL *fileURL = [self _outputURLForIndexPath:indexPath];
     NSString *imageName;
     if (indexPath.section == 0) {
-        fileURL = _decryptedIPAURLs[indexPath.row];
         imageName = @"doc.zipper";
+    } else if (indexPath.section == 1) {
+        imageName = @"folder.fill";
     } else {
-        fileURL = _decryptedBinaries[indexPath.row];
         imageName = @"doc.fill";
     }
 
     NSDictionary *attributes = [[NSFileManager defaultManager] attributesOfItemAtPath:fileURL.path error:nil];
     NSDate *modificationDate = attributes[NSFileModificationDate];
     NSNumber *fileSize = attributes[NSFileSize];
+    unsigned long long outputSize = [self _indexPathIsAppBundle:indexPath] ? [self _recursiveSizeOfDirectoryAtURL:fileURL] : fileSize.unsignedLongLongValue;
     
     NSDateFormatter *dateFormatter = [[NSDateFormatter alloc] init];
     [dateFormatter setDateFormat:@"MMM d, yyyy h:mm a"];
@@ -144,7 +191,7 @@
     cell.imageView.image = [UIImage systemImageNamed:imageName];
 
     UILabel *fileSizeLabel = [[UILabel alloc] init];
-    fileSizeLabel.text = [NSString stringWithFormat:@"%.2f MB", [fileSize doubleValue] / (1024.0 * 1024.0)];
+    fileSizeLabel.text = [NSString stringWithFormat:@"%.2f MB", (double)outputSize / (1024.0 * 1024.0)];
     fileSizeLabel.textColor = [UIColor systemGray2Color];
     fileSizeLabel.font = [UIFont systemFontOfSize:12.0f];
     [fileSizeLabel sizeToFit];
