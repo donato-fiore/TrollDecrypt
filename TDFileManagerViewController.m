@@ -163,6 +163,31 @@
     return totalSize;
 }
 
+- (void)_presentLocationActionsForURL:(NSURL *)url sourceView:(UIView *)sourceView sourceRect:(CGRect)sourceRect {
+    UIAlertController *alert = [UIAlertController alertControllerWithTitle:url.lastPathComponent message:url.path preferredStyle:UIAlertControllerStyleActionSheet];
+
+    if ([[UIApplication sharedApplication] canOpenURL:[NSURL URLWithString:@"filza://"]]) {
+        [alert addAction:[UIAlertAction actionWithTitle:[Localize localizedStringForKey:@"SHOW_IN_FILZA"] style:UIAlertActionStyleDefault handler:^(UIAlertAction *action) {
+            NSURL *filzaURL = [[NSURL URLWithString:@"filza://view"] URLByAppendingPathComponent:url.path];
+            [[UIApplication sharedApplication] openURL:filzaURL options:@{} completionHandler:nil];
+        }]];
+    }
+
+    [alert addAction:[UIAlertAction actionWithTitle:[Localize localizedStringForKey:@"COPY_PATH"] style:UIAlertActionStyleDefault handler:^(UIAlertAction *action) {
+        [UIPasteboard generalPasteboard].string = url.path;
+    }]];
+    [alert addAction:[UIAlertAction actionWithTitle:[Localize localizedStringForKey:@"CANCEL"] style:UIAlertActionStyleCancel handler:nil]];
+
+    UIPopoverPresentationController *popover = alert.popoverPresentationController;
+    if (popover) {
+        popover.sourceView = sourceView ?: self.view;
+        popover.sourceRect = sourceRect;
+        popover.permittedArrowDirections = UIPopoverArrowDirectionAny;
+    }
+
+    [self presentViewController:alert animated:YES completion:nil];
+}
+
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
     UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:@"DecryptedFileCell"];
     if (!cell) cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleSubtitle reuseIdentifier:@"DecryptedFileCell"];
@@ -211,13 +236,7 @@
 
 - (UISwipeActionsConfiguration *)tableView:(UITableView *)tableView trailingSwipeActionsConfigurationForRowAtIndexPath:(NSIndexPath *)indexPath {
     UIContextualAction *deleteAction = [UIContextualAction contextualActionWithStyle:UIContextualActionStyleDestructive title:[Localize localizedStringForKey:@"Delete"] handler:^(UIContextualAction *action, __kindof UIView *sourceView, void (^completionHandler)(BOOL)) {
-        // NSURL *fileURL = _decryptedIPAURLs[indexPath.row];
-        NSURL *fileURL;
-        if (indexPath.section == 0) {
-            fileURL = _decryptedIPAURLs[indexPath.row];
-        } else {
-            fileURL = _decryptedBinaries[indexPath.row];
-        }
+        NSURL *fileURL = [self _outputURLForIndexPath:indexPath];
         [[NSFileManager defaultManager] removeItemAtURL:fileURL error:nil];
 
         [self reload];
@@ -230,11 +249,13 @@
 }
 
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
-    NSURL *fileURL;
-    if (indexPath.section == 0) {
-        fileURL = _decryptedIPAURLs[indexPath.row];
-    } else {
-        fileURL = _decryptedBinaries[indexPath.row];
+    NSURL *fileURL = [self _outputURLForIndexPath:indexPath];
+
+    if ([self _indexPathIsAppBundle:indexPath]) {
+        UITableViewCell *cell = [tableView cellForRowAtIndexPath:indexPath];
+        [self _presentLocationActionsForURL:fileURL sourceView:cell.contentView sourceRect:cell.contentView.bounds];
+        [tableView deselectRowAtIndexPath:indexPath animated:YES];
+        return;
     }
 
     UIActivityViewController *activityViewController = [[UIActivityViewController alloc] initWithActivityItems:@[ fileURL ] applicationActivities:nil];
