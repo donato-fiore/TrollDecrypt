@@ -48,7 +48,6 @@ after-stage::
 	$(ECHO_NOTHING)rm -rf Payload$(ECHO_END)
 	$(ECHO_NOTHING)rm -f TrollDecrypt.tipa$(ECHO_END)
 	$(ECHO_NOTHING)mkdir -p $(THEOS_STAGING_DIR)/Payload$(ECHO_END)
-	$(ECHO_NOTHING)ldid -STrollDecrypt.entitlements $(THEOS_STAGING_DIR)/Applications/TrollDecrypt.app/TrollDecrypt$(ECHO_END)
 	$(ECHO_NOTHING)cp -a $(THEOS_STAGING_DIR)/Applications/* $(THEOS_STAGING_DIR)/Payload$(ECHO_END)
 	$(ECHO_NOTHING)mv $(THEOS_STAGING_DIR)/Payload .$(ECHO_END)
 	$(ECHO_NOTHING)zip -q -r TrollDecrypt.tipa Payload$(ECHO_END)

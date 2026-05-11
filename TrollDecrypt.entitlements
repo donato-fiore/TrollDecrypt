@@ -1,29 +1,34 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
-	<dict>
-		<key>platform-application</key>
-		<true/>
-		<key>com.apple.private.security.no-sandbox</key>
-		<true/>
-		<key>com.apple.private.security.storage.AppBundles</key>
-		<true/>
-		<key>task_for_pid-allow</key>
-		<true/>
-		<key>com.apple.springboard.launchapplications</key>
-		<true/>
-		<key>com.apple.private.xpc.domain-extension</key>
-		<true/>
-		<key>com.apple.private.xpc.domain-extension.proxy</key>
-		<true/>
-		<key>com.apple.private.xpc.launchd.job-manager</key>
-		<string>com.apple.runningboard</string>
-		<key>com.apple.runningboard.process-state</key>
-		<true/>
-        <key>com.apple.security.exception.iokit-user-client-class</key>
+    <dict>
+        <key>platform-application</key>
+        <true/>
+        <key>com.apple.private.security.no-sandbox</key>
+        <true/>
+        <key>com.apple.private.security.storage.AppBundles</key>
+        <true/>
+        <key>task_for_pid-allow</key>
+        <true/>
+        <key>com.apple.springboard.launchapplications</key>
+        <true/>
+        <key>com.apple.private.xpc.domain-extension</key>
+        <true/>
+        <key>com.apple.private.xpc.domain-extension.proxy</key>
+        <true/>
+        <key>com.apple.private.xpc.launchd.job-manager</key>
+        <string>com.apple.runningboard</string>
+        <key>com.apple.runningboard.process-state</key>
+        <true/>
+        <key>com.apple.security.iokit-user-client-class</key>
         <array>
             <string>AGXDeviceUserClient</string>
+            <string>AGXGLContext</string>
+            <string>IOAccelDevice</string>
+            <string>IOAccelDevice2</string>
+            <string>IOAccelSharedUserClient</string>
+            <string>IOAccelSharedUserClient2</string>
             <string>IOSurfaceRootUserClient</string>
         </array>
-	</dict>
+    </dict>
 </plist>
