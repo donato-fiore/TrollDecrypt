@@ -95,7 +95,14 @@ static inline NSUInteger getEffectiveIconFormat(void) {
             return;
         }
 
-        [self _decryptApplicationProxy:application];
+        [alert dismissViewControllerAnimated:YES completion:^{
+            UIView *sourceView = self.navigationController.navigationBar ?: self.view;
+            UIView *customView = self.navigationItem.rightBarButtonItem.customView;
+            CGRect sourceRect = customView
+                ? customView.frame
+                : CGRectMake(CGRectGetMaxX(sourceView.bounds) - 1.0, 0.0, 1.0, CGRectGetHeight(sourceView.bounds));
+            [self _presentDecryptionOptionsForApplication:application sourceView:sourceView sourceRect:sourceRect];
+        }];
     }];
     [alert addAction:cancelAction];
     [alert addAction:decryptAction];
@@ -190,38 +197,49 @@ static inline NSUInteger getEffectiveIconFormat(void) {
 }
 
 // TDDecryptionTask
-- (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
-    LSApplicationProxy *application = _filteredApplications[indexPath.row];
-
+- (void)_presentDecryptionOptionsForApplication:(LSApplicationProxy *)application
+                                     sourceView:(UIView *)sourceView
+                                     sourceRect:(CGRect)sourceRect {
     NSString *title = [Localize localizedStringForKey:@"DECRYPT"];
     NSString *subtitle = [NSString stringWithFormat:[Localize localizedStringForKey:@"DECRYPTION_PROMPT"], [application atl_nameToDisplay]];
-    // UIAlertController *alert = [UIAlertController alertControllerWithTitle:[Localize localizedStringForKey:@"DECRYPT"] message:[NSString stringWithFormat:@"Do you want to decrypt %@?", [application atl_nameToDisplay]] preferredStyle:UIAlertControllerStyleActionSheet];
     UIAlertController *alert = [UIAlertController alertControllerWithTitle:title message:subtitle preferredStyle:UIAlertControllerStyleActionSheet];
+    void (^decryptWithOptions)(TDDecryptionTaskOptions) = ^(TDDecryptionTaskOptions options) {
+        [self _decryptApplicationProxy:application options:options];
+    };
 
+    UIAlertAction *fullIPAAction = [UIAlertAction actionWithTitle:[Localize localizedStringForKey:@"FULL_IPA"] style:UIAlertActionStyleDefault handler:^(UIAlertAction *action) {
+        decryptWithOptions(TDDecryptionTaskDefaultOptions());
+    }];
+    [alert addAction:fullIPAAction];
+
+    UIAlertAction *appBundleOnlyAction = [UIAlertAction actionWithTitle:[Localize localizedStringForKey:@"APP_BUNDLE_ONLY"] style:UIAlertActionStyleDefault handler:^(UIAlertAction *action) {
+        decryptWithOptions(TDDecryptionTaskOptionsMake(TDDecryptionOutputModeAppBundleOnly));
+    }];
+    [alert addAction:appBundleOnlyAction];
+
+    UIAlertAction *mainBinaryOnlyAction = [UIAlertAction actionWithTitle:[Localize localizedStringForKey:@"MAIN_BINARY_ONLY"] style:UIAlertActionStyleDefault handler:^(UIAlertAction *action) {
+        decryptWithOptions(TDDecryptionTaskOptionsMake(TDDecryptionOutputModeMainBinaryOnly));
+    }];
+    [alert addAction:mainBinaryOnlyAction];
 
     UIAlertAction *cancelAction = [UIAlertAction actionWithTitle:[Localize localizedStringForKey:@"CANCEL"] style:UIAlertActionStyleCancel handler:nil];
     [alert addAction:cancelAction];
 
-    UIAlertAction *decryptBinaryOnlyAction = [UIAlertAction actionWithTitle:[Localize localizedStringForKey:@"MAIN_BINARY_ONLY"] style:UIAlertActionStyleDefault handler:^(UIAlertAction *action) {
-        TDDecryptionTaskOptions options = TDDecryptionTaskOptionsMake(true);
-        [self _decryptApplicationProxy:application options:options];
-    }];
-    [alert addAction:decryptBinaryOnlyAction];
-
-    UIAlertAction *decryptAction = [UIAlertAction actionWithTitle:[Localize localizedStringForKey:@"FULL_IPA"] style:UIAlertActionStyleDefault handler:^(UIAlertAction *action) {
-        [self _decryptApplicationProxy:application];
-    }];
-    [alert addAction:decryptAction];
-
     // iPad popover fix - @NightwindDev
     UIPopoverPresentationController *popover = alert.popoverPresentationController;
     if (popover) {
-        popover.sourceView = self.view;
-        popover.sourceRect = [tableView rectForRowAtIndexPath:indexPath];
+        popover.sourceView = sourceView ?: self.view;
+        popover.sourceRect = sourceRect;
         popover.permittedArrowDirections = UIPopoverArrowDirectionAny;
     }
 
     [self presentViewController:alert animated:YES completion:nil];
+}
+
+- (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
+    LSApplicationProxy *application = _filteredApplications[indexPath.row];
+
+    [self _presentDecryptionOptionsForApplication:application sourceView:self.view sourceRect:[tableView rectForRowAtIndexPath:indexPath]];
     [tableView deselectRowAtIndexPath:indexPath animated:YES];
 }
 
@@ -265,6 +283,13 @@ static inline NSUInteger getEffectiveIconFormat(void) {
                     [resultAlert addAction:[UIAlertAction actionWithTitle:[Localize localizedStringForKey:@"SHOW_IN_FILZA"] style:UIAlertActionStyleDefault handler:^(UIAlertAction *action) {
                         NSURL *url = [[NSURL URLWithString:@"filza://view"] URLByAppendingPathComponent:[outputURL path]];
                         [[UIApplication sharedApplication] openURL:url options:@{} completionHandler:nil];
+                    }]];
+                }
+
+                BOOL appBundleOnly = (options.outputMode == TDDecryptionOutputModeAppBundleOnly);
+                if (appBundleOnly) {
+                    [resultAlert addAction:[UIAlertAction actionWithTitle:[Localize localizedStringForKey:@"COPY_PATH"] style:UIAlertActionStyleDefault handler:^(UIAlertAction *action) {
+                        [UIPasteboard generalPasteboard].string = outputURL.path;
                     }]];
                 }
             } else {

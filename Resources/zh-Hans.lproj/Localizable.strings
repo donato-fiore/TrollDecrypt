@@ -12,15 +12,18 @@ DECRYPT_APPS = "解密应用";
 DECRYPTED_FILES = "已解密文件";
 
 DECRYPTED_IPAS = "已解密 IPA（%lu）";
+DECRYPTED_APP_BUNDLES = "Decrypted App Bundles (%lu)";
 DECRYPTED_BINARIES = "已解密二进制文件（%lu）";
 
 DECRYPTION_PROMPT = "您要解密 %@ 吗？";
 MAIN_BINARY_ONLY = "仅主二进制文件";
+APP_BUNDLE_ONLY = "App Bundle Only";
 FULL_IPA = "完整 IPA";
 
 LAUNCHING_APPLICATION = "正在启动应用...";
 COPYING_BUNDLE = "正在复制应用包...";
 DECRYPTING_BINARY = "正在解密二进制文件...";
+SAVING_APP_BUNDLE = "Saving app bundle...";
 DECRYPTION_COMPLETED = "解密完成！";
 BUILDING_IPA = "正在构建 IPA...（可能需要一分钟）";
 
@@ -30,4 +33,5 @@ MANUAL_ENTRY_TITLE = "手动输入 Bundle Identifier";
 MANUAL_ENTRY_SUBTITLE = "请输入您要解密的应用的 Bundle Identifier。";
 
 SHOW_IN_FILZA = "在 Filza 中显示";
+COPY_PATH = "Copy Path";
 SHOW_IN_FILES = "在文件中显示";

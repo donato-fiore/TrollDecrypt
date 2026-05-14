@@ -19,6 +19,8 @@
             return @"Application launch failed";
         case TDErrorCodeIPAConstructionFailed:
             return @"IPA construction failed";
+        case TDErrorCodeAppBundleOutputFailed:
+            return @"App bundle output failed";
         case TDErrorCodeUnknown:
         default:
             return @"Unknown error";

@@ -5,7 +5,8 @@ typedef NS_ENUM(NSInteger, TDErrorCode) {
     TDErrorCodeApplicationBundleCopyFailed,
     TDErrorCodeBinaryDecryptionFailed,
     TDErrorCodeLaunchFailed,
-    TDErrorCodeIPAConstructionFailed
+    TDErrorCodeIPAConstructionFailed,
+    TDErrorCodeAppBundleOutputFailed
 };
 
 @interface TDError : NSError

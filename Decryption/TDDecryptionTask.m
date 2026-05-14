@@ -12,14 +12,14 @@
 #import <MobileCoreServices/MobileCoreServices.h>
 #import "Extensions/LSBundleProxy+TrollDecrypt.h"
 
-TDDecryptionTaskOptions TDDecryptionTaskOptionsMake(bool decryptBinaryOnly) {
+TDDecryptionTaskOptions TDDecryptionTaskOptionsMake(TDDecryptionOutputMode outputMode) {
     TDDecryptionTaskOptions options = {0};
-    options.decryptBinaryOnly = decryptBinaryOnly;
+    options.outputMode = outputMode;
     return options;
 }
 
 TDDecryptionTaskOptions TDDecryptionTaskDefaultOptions(void) {
-    return TDDecryptionTaskOptionsMake(false);
+    return TDDecryptionTaskOptionsMake(TDDecryptionOutputModeFullIPA);
 }
 
 @implementation TDDecryptionTask {
@@ -54,6 +54,10 @@ TDDecryptionTaskOptions TDDecryptionTaskDefaultOptions(void) {
             });
         };
 
+        BOOL mainBinaryOnly = (options.outputMode == TDDecryptionOutputModeMainBinaryOnly);
+        BOOL appBundleOnly = (options.outputMode == TDDecryptionOutputModeAppBundleOnly);
+        BOOL fullIPA = (options.outputMode == TDDecryptionOutputModeFullIPA);
+
         if (![self createOutputDirectoryIfNeeded]) {
             NSError *dirError = [TDError errorWithCode:TDErrorCodeUnknown];
             dispatch_async(dispatch_get_main_queue(), ^{
@@ -61,6 +65,52 @@ TDDecryptionTaskOptions TDDecryptionTaskDefaultOptions(void) {
             });
             return;
         }
+
+        NSString *appBundleOutputName =
+            [NSString stringWithFormat:@"%@_%@_decrypted.app",
+             bundleIdentifier, [self->_applicationProxy atl_shortVersionString]];
+        NSString *appBundleOutputPath = [ROOT_OUTPUT_PATH stringByAppendingPathComponent:appBundleOutputName];
+
+        if (appBundleOnly && [self->_fileManager fileExistsAtPath:appBundleOutputPath]) {
+            NSError *removeError = nil;
+            [self->_fileManager removeItemAtPath:appBundleOutputPath error:&removeError];
+            if (removeError) {
+                NSLog(@"Failed to remove existing App Bundle output at path %@, error: %@", appBundleOutputPath, removeError);
+                NSError *outputError = [TDError errorWithCode:TDErrorCodeAppBundleOutputFailed];
+                dispatch_async(dispatch_get_main_queue(), ^{
+                    if (completionHandler) completionHandler(NO, nil, outputError);
+                });
+                return;
+            }
+        }
+
+        NSMutableArray<NSNumber *> *launchedPIDs = [NSMutableArray array];
+        void (^cleanupLaunchedProcesses)(void) = ^{
+            for (NSNumber *pidNumber in launchedPIDs) {
+                pid_t pid = (pid_t)pidNumber.intValue;
+                if (pid > 0) {
+                    kill(pid, SIGKILL);
+                }
+            }
+            [launchedPIDs removeAllObjects];
+        };
+
+        void (^cleanupAppBundleOutput)(void) = ^{
+            if (!appBundleOnly) return;
+
+            NSError *cleanupError = nil;
+            if ([self->_fileManager fileExistsAtPath:appBundleOutputPath]) {
+                [self->_fileManager removeItemAtPath:appBundleOutputPath error:&cleanupError];
+                if (cleanupError) NSLog(@"Failed to remove partial App Bundle output at path %@, error: %@", appBundleOutputPath, cleanupError);
+            }
+
+            cleanupError = nil;
+            NSString *workingDirectoryPath = self->_workingDirectoryPath ?: [ROOT_OUTPUT_PATH stringByAppendingPathComponent:@".work"];
+            if ([self->_fileManager fileExistsAtPath:workingDirectoryPath]) {
+                [self->_fileManager removeItemAtPath:workingDirectoryPath error:&cleanupError];
+                if (cleanupError) NSLog(@"Failed to remove App Bundle working directory at path %@, error: %@", workingDirectoryPath, cleanupError);
+            }
+        };
 
         progress([Localize localizedStringForKey:@"LAUNCHING_APPLICATION"]);
 
@@ -75,11 +125,14 @@ TDDecryptionTaskOptions TDDecryptionTaskDefaultOptions(void) {
         }
 
         pid_t targetPID = response.pid;
+        [launchedPIDs addObject:@(targetPID)];
 
-        if (!options.decryptBinaryOnly) {    
+        if (!mainBinaryOnly) {    
             progress([Localize localizedStringForKey:@"COPYING_BUNDLE"]);
             if (![self _copyApplicationBundle]) {
                 NSError *copyError = [TDError errorWithCode:TDErrorCodeApplicationBundleCopyFailed];
+                cleanupAppBundleOutput();
+                cleanupLaunchedProcesses();
                 dispatch_async(dispatch_get_main_queue(), ^{
                     if (completionHandler) completionHandler(NO, nil, copyError);
                 });
@@ -93,7 +146,7 @@ TDDecryptionTaskOptions TDDecryptionTaskDefaultOptions(void) {
 
         BOOL status = false;
         NSString *fullOutputPath = nil;
-        if (options.decryptBinaryOnly) {
+        if (mainBinaryOnly) {
             NSLog(@"Decrypting main binary only to output directory: %@", ROOT_OUTPUT_PATH);
             NSLog(@"image path: %@", imagePath);
             NSString *fileName = [NSString stringWithFormat:@"%@_%@_decrypted",
@@ -108,14 +161,16 @@ TDDecryptionTaskOptions TDDecryptionTaskDefaultOptions(void) {
 
         if (!status) {
             NSError *decryptError = [TDError errorWithCode:TDErrorCodeBinaryDecryptionFailed];
+            cleanupAppBundleOutput();
+            cleanupLaunchedProcesses();
             dispatch_async(dispatch_get_main_queue(), ^{
                 if (completionHandler) completionHandler(NO, nil, decryptError);
             });
             return;
         }
 
-        if (options.decryptBinaryOnly) {
-            kill(targetPID, SIGKILL);
+        if (mainBinaryOnly) {
+            cleanupLaunchedProcesses();
             progress([Localize localizedStringForKey:@"DECRYPTION_COMPLETED"]);
 
             dispatch_async(dispatch_get_main_queue(), ^{
@@ -158,6 +213,7 @@ TDDecryptionTaskOptions TDDecryptionTaskDefaultOptions(void) {
                 NSLog(@"Failed to launch extension %@", extension.bundleIdentifier);
                 continue;
             }
+            [launchedPIDs addObject:@(extensionResponse.pid)];
 
             currentExtensionIndex++;
             progress([NSString stringWithFormat:@"Decrypting extension %ld/%ld...",
@@ -167,32 +223,75 @@ TDDecryptionTaskOptions TDDecryptionTaskDefaultOptions(void) {
             if (![self decryptImageAtPath:extensionImagePath forPID:extensionResponse.pid]) {
                 NSLog(@"Failed to decrypt main executable for extension %@", extension.bundleIdentifier);
             }
-
-            kill(extensionResponse.pid, SIGKILL);
         }
 
-        progress([Localize localizedStringForKey:@"BUILDING_IPA"]);
-        NSString *outputIPAName =
-            [NSString stringWithFormat:@"%@_%@_decrypted.ipa",
-             bundleIdentifier, [self->_applicationProxy atl_shortVersionString]];
+        if (appBundleOnly) {
+            progress([Localize localizedStringForKey:@"SAVING_APP_BUNDLE"]);
 
-        if (![self _buildIPAWithName:outputIPAName]) {
-            NSError *ipaError = [TDError errorWithCode:TDErrorCodeIPAConstructionFailed];
+            NSError *moveError = nil;
+            [self->_fileManager moveItemAtPath:self->_destinationPath toPath:appBundleOutputPath error:&moveError];
+            if (moveError) {
+                NSLog(@"Failed to save App Bundle output at path %@, error: %@", appBundleOutputPath, moveError);
+
+                NSError *outputError = [TDError errorWithCode:TDErrorCodeAppBundleOutputFailed];
+                cleanupAppBundleOutput();
+                cleanupLaunchedProcesses();
+                dispatch_async(dispatch_get_main_queue(), ^{
+                    if (completionHandler) completionHandler(NO, nil, outputError);
+                });
+                return;
+            }
+
+            NSError *cleanupError = nil;
+            if (self->_workingDirectoryPath && [self->_fileManager fileExistsAtPath:self->_workingDirectoryPath]) {
+                [self->_fileManager removeItemAtPath:self->_workingDirectoryPath error:&cleanupError];
+                if (cleanupError) NSLog(@"Failed to clean up working directory after App Bundle output: %@, error: %@", self->_workingDirectoryPath, cleanupError);
+            }
+
+            cleanupLaunchedProcesses();
+            progress([Localize localizedStringForKey:@"DECRYPTION_COMPLETED"]);
+
             dispatch_async(dispatch_get_main_queue(), ^{
-                if (completionHandler) completionHandler(NO, nil, ipaError);
+                if (completionHandler) completionHandler(YES, [NSURL fileURLWithPath:appBundleOutputPath], nil);
             });
             return;
         }
 
-        kill(targetPID, SIGKILL);
-        progress([Localize localizedStringForKey:@"DECRYPTION_COMPLETED"]);
+        if (fullIPA) {
+            progress([Localize localizedStringForKey:@"BUILDING_IPA"]);
+            NSString *outputIPAName =
+                [NSString stringWithFormat:@"%@_%@_decrypted.ipa",
+                 bundleIdentifier, [self->_applicationProxy atl_shortVersionString]];
 
-        NSString *ipaPath = [ROOT_OUTPUT_PATH stringByAppendingPathComponent:outputIPAName];
-        NSURL *url = [NSURL fileURLWithPath:ipaPath];
+            if (![self _buildIPAWithName:outputIPAName]) {
+                NSError *ipaError = [TDError errorWithCode:TDErrorCodeIPAConstructionFailed];
+                cleanupLaunchedProcesses();
+                dispatch_async(dispatch_get_main_queue(), ^{
+                    if (completionHandler) completionHandler(NO, nil, ipaError);
+                });
+                return;
+            }
 
+            cleanupLaunchedProcesses();
+            progress([Localize localizedStringForKey:@"DECRYPTION_COMPLETED"]);
+
+            NSString *ipaPath = [ROOT_OUTPUT_PATH stringByAppendingPathComponent:outputIPAName];
+            NSURL *url = [NSURL fileURLWithPath:ipaPath];
+
+            dispatch_async(dispatch_get_main_queue(), ^{
+                if (completionHandler) completionHandler(YES, url, nil);
+            });
+            return;
+        }
+
+        NSLog(@"Unknown output mode: %ld", (long)options.outputMode);
+        NSError *unknownError = [TDError errorWithCode:TDErrorCodeUnknown];
+        cleanupAppBundleOutput();
+        cleanupLaunchedProcesses();
         dispatch_async(dispatch_get_main_queue(), ^{
-            if (completionHandler) completionHandler(YES, url, nil);
+            if (completionHandler) completionHandler(NO, nil, unknownError);
         });
+        return;
     });
 }
 
