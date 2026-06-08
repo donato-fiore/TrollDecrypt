@@ -6,8 +6,12 @@
 
 @implementation TDFileManagerViewController {
     UIView *_noFilesInfoView;
-    NSMutableArray<NSURL *> *_decryptedIPAURLs;
-    NSMutableArray<NSURL *> *_decryptedBinaries;
+    UILabel *_noFilesInfoLabel;
+    NSArray<NSURL *> *_decryptedIPAURLs;
+    NSArray<NSURL *> *_decryptedBinaries;
+    NSArray<NSURL *> *_filteredDecryptedIPAURLs;
+    NSArray<NSURL *> *_filteredDecryptedBinaries;
+    UISearchController *_searchController;
 }
 
 - (instancetype)init {
@@ -24,7 +28,20 @@
     self.refreshControl = [[UIRefreshControl alloc] init];
     [self.refreshControl addTarget:self action:@selector(reload) forControlEvents:UIControlEventValueChanged];
 
+    [self _configureSearchController];
     [self updateEmptyState];
+}
+
+- (void)_configureSearchController {
+    _searchController = [[UISearchController alloc] initWithSearchResultsController:nil];
+    _searchController.searchResultsUpdater = self;
+    _searchController.obscuresBackgroundDuringPresentation = NO;
+    _searchController.searchBar.placeholder = @"Search Files";
+    _searchController.searchBar.autocapitalizationType = UITextAutocapitalizationTypeNone;
+    _searchController.searchBar.autocorrectionType = UITextAutocorrectionTypeNo;
+
+    self.navigationItem.searchController = _searchController;
+    self.definesPresentationContext = YES;
 }
 
 - (void)viewWillAppear:(BOOL)animated {
@@ -74,6 +91,8 @@
 
     _decryptedIPAURLs = [decryptedIPAURLs copy];
     _decryptedBinaries = [decryptedBinaries copy];
+
+    [self _applySearchFilter];
 }
 
 - (void)reload {
@@ -84,8 +103,10 @@
 }
 
 - (void)updateEmptyState {
-    if (_decryptedIPAURLs.count == 0 && _decryptedBinaries.count == 0) {
+    if (_filteredDecryptedIPAURLs.count == 0 && _filteredDecryptedBinaries.count == 0) {
+        NSString *query = [_searchController.searchBar.text ?: @"" stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
         self.tableView.backgroundView = [self noFilesInfoView];
+        _noFilesInfoLabel.text = (query.length > 0) ? @"No matching files." : @"No files.";
     } else {
         self.tableView.backgroundView = nil;
     }
@@ -96,11 +117,7 @@
 }
 
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
-    if (section == 0) {
-        return _decryptedIPAURLs.count;
-    } else {
-        return _decryptedBinaries.count;
-    }
+    return (section == 0 ? _filteredDecryptedIPAURLs : _filteredDecryptedBinaries).count;
 }
 
 - (NSString *)tableView:(UITableView *)tableView titleForHeaderInSection:(NSInteger)section {
@@ -108,10 +125,10 @@
     NSInteger count = 0;
     if (section == 0) {
         format = [Localize localizedStringForKey:@"DECRYPTED_IPAS"];
-        count = _decryptedIPAURLs.count;
+        count = _filteredDecryptedIPAURLs.count;
     } else {
         format = [Localize localizedStringForKey:@"DECRYPTED_BINARIES"];
-        count = _decryptedBinaries.count;
+        count = _filteredDecryptedBinaries.count;
     }
 
     return [NSString stringWithFormat:format, (unsigned long)count];
@@ -124,10 +141,10 @@
     NSURL *fileURL;
     NSString *imageName;
     if (indexPath.section == 0) {
-        fileURL = _decryptedIPAURLs[indexPath.row];
+        fileURL = _filteredDecryptedIPAURLs[indexPath.row];
         imageName = @"doc.zipper";
     } else {
-        fileURL = _decryptedBinaries[indexPath.row];
+        fileURL = _filteredDecryptedBinaries[indexPath.row];
         imageName = @"doc.fill";
     }
 
@@ -163,18 +180,12 @@
 }
 
 - (UISwipeActionsConfiguration *)tableView:(UITableView *)tableView trailingSwipeActionsConfigurationForRowAtIndexPath:(NSIndexPath *)indexPath {
-    UIContextualAction *deleteAction = [UIContextualAction contextualActionWithStyle:UIContextualActionStyleDestructive title:[Localize localizedStringForKey:@"Delete"] handler:^(UIContextualAction *action, __kindof UIView *sourceView, void (^completionHandler)(BOOL)) {
-        // NSURL *fileURL = _decryptedIPAURLs[indexPath.row];
-        NSURL *fileURL;
-        if (indexPath.section == 0) {
-            fileURL = _decryptedIPAURLs[indexPath.row];
-        } else {
-            fileURL = _decryptedBinaries[indexPath.row];
-        }
+    NSString *title = [Localize localizedStringForKey:@"Delete"];
+    UIContextualAction *deleteAction = [UIContextualAction contextualActionWithStyle:UIContextualActionStyleDestructive title:title handler:^(UIContextualAction *action, __kindof UIView *sourceView, void (^completionHandler)(BOOL)) {
+        NSURL *fileURL = indexPath.section == 0 ? _filteredDecryptedIPAURLs[indexPath.row] : _filteredDecryptedBinaries[indexPath.row];
         [[NSFileManager defaultManager] removeItemAtURL:fileURL error:nil];
 
         [self reload];
-
         completionHandler(YES);
     }];
 
@@ -183,12 +194,7 @@
 }
 
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
-    NSURL *fileURL;
-    if (indexPath.section == 0) {
-        fileURL = _decryptedIPAURLs[indexPath.row];
-    } else {
-        fileURL = _decryptedBinaries[indexPath.row];
-    }
+    NSURL *fileURL = (indexPath.section == 0 ? _filteredDecryptedIPAURLs : _filteredDecryptedBinaries)[indexPath.row];
 
     UIActivityViewController *activityViewController = [[UIActivityViewController alloc] initWithActivityItems:@[ fileURL ] applicationActivities:nil];
     
@@ -212,13 +218,13 @@
     UIImageView *fileImageView = [[UIImageView alloc] initWithImage:[UIImage systemImageNamed:@"doc" withConfiguration:[UIImageSymbolConfiguration configurationWithPointSize:52]]];
     fileImageView.tintColor = [UIColor systemGray2Color];
 
-    UILabel *label = [[UILabel alloc] init];
-    label.text = @"No files.";
-    label.font = [UIFont systemFontOfSize:24.0 weight:UIFontWeightMedium];
-    label.textColor = [UIColor systemGray2Color];
-    label.textAlignment = NSTextAlignmentCenter;
+    _noFilesInfoLabel = [[UILabel alloc] init];
+    _noFilesInfoLabel.text = @"No files.";
+    _noFilesInfoLabel.font = [UIFont systemFontOfSize:24.0 weight:UIFontWeightMedium];
+    _noFilesInfoLabel.textColor = [UIColor systemGray2Color];
+    _noFilesInfoLabel.textAlignment = NSTextAlignmentCenter;
 
-    UIStackView *stackView = [[UIStackView alloc] initWithArrangedSubviews:@[fileImageView, label]];
+    UIStackView *stackView = [[UIStackView alloc] initWithArrangedSubviews:@[fileImageView, _noFilesInfoLabel]];
     stackView.axis = UILayoutConstraintAxisVertical;
     stackView.alignment = UIStackViewAlignmentCenter;
     stackView.spacing = 10;
@@ -233,6 +239,30 @@
     ]];
 
     return _noFilesInfoView;
+}
+
+- (void)updateSearchResultsForSearchController:(UISearchController *)sc {
+    [self _applySearchFilter];
+    [self.tableView reloadData];
+    [self updateEmptyState];
+}
+
+- (void)_applySearchFilter {
+    NSString *query = [_searchController.searchBar.text ?: @"" stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
+
+    if (query.length == 0) {
+        _filteredDecryptedIPAURLs = _decryptedIPAURLs ?: @[];
+        _filteredDecryptedBinaries = _decryptedBinaries ?: @[];
+        return;
+    }
+
+    NSString *lowercaseQuery = [query lowercaseString];
+    NSPredicate *predicate = [NSPredicate predicateWithBlock:^BOOL(NSURL *fileURL, NSDictionary *bindings) {
+        return [[fileURL.lastPathComponent lowercaseString] containsString:lowercaseQuery];
+    }];
+
+    _filteredDecryptedIPAURLs = [_decryptedIPAURLs filteredArrayUsingPredicate:predicate];
+    _filteredDecryptedBinaries = [_decryptedBinaries filteredArrayUsingPredicate:predicate];
 }
 
 @end
