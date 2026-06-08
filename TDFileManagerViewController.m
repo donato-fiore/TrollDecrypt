@@ -41,6 +41,7 @@
     _searchController.searchBar.autocorrectionType = UITextAutocorrectionTypeNo;
 
     self.navigationItem.searchController = _searchController;
+    self.navigationItem.hidesSearchBarWhenScrolling = NO;
     self.definesPresentationContext = YES;
 }
 
