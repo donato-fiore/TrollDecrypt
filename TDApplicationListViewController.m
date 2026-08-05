@@ -74,6 +74,7 @@ static inline NSUInteger getEffectiveIconFormat(void) {
     _searchController.searchBar.autocorrectionType = UITextAutocorrectionTypeNo;
 
     self.navigationItem.searchController = _searchController;
+    self.navigationItem.hidesSearchBarWhenScrolling = NO;
     self.definesPresentationContext = YES;
 }
 
@@ -260,18 +261,27 @@ static inline NSUInteger getEffectiveIconFormat(void) {
             if (success) {
                 resultAlert = [UIAlertController alertControllerWithTitle:[Localize localizedStringForKey:@"SUCCESS"] message:[Localize localizedStringForKey:@"DECRYPTION_COMPLETED"] preferredStyle:UIAlertControllerStyleAlert];
                 
-                // @iCrazeiOS
                 if ([[UIApplication sharedApplication] canOpenURL:[NSURL URLWithString:@"filza://"]]) {
                     [resultAlert addAction:[UIAlertAction actionWithTitle:[Localize localizedStringForKey:@"SHOW_IN_FILZA"] style:UIAlertActionStyleDefault handler:^(UIAlertAction *action) {
                         NSURL *url = [[NSURL URLWithString:@"filza://view"] URLByAppendingPathComponent:[outputURL path]];
                         [[UIApplication sharedApplication] openURL:url options:@{} completionHandler:nil];
                     }]];
                 }
+
+                if (outputURL) {
+                    [resultAlert addAction:[UIAlertAction actionWithTitle:[Localize localizedStringForKey:@"SHARE"] style:UIAlertActionStyleDefault handler:^(UIAlertAction *action) {
+                        UIActivityViewController *activityViewController = [[UIActivityViewController alloc] initWithActivityItems:@[outputURL] applicationActivities:nil];
+                        activityViewController.popoverPresentationController.sourceView = self.view;
+                        activityViewController.popoverPresentationController.sourceRect = self.view.bounds;
+                        [self presentViewController:activityViewController animated:YES completion:nil];
+                    }]];
+                }
             } else {
                 resultAlert = [UIAlertController alertControllerWithTitle:[Localize localizedStringForKey:@"ERROR"] message:error.localizedDescription preferredStyle:UIAlertControllerStyleAlert];
             }
             
-            [resultAlert addAction:[UIAlertAction actionWithTitle:[Localize localizedStringForKey:@"OK"] style:UIAlertActionStyleDefault handler:nil]];
+            NSString *closeTitle = success ? [Localize localizedStringForKey:@"DISMISS"] : [Localize localizedStringForKey:@"OK"];
+            [resultAlert addAction:[UIAlertAction actionWithTitle:closeTitle style:UIAlertActionStyleDefault handler:nil]];
             [self presentViewController:resultAlert animated:YES completion:nil];
         });
     } options:options];

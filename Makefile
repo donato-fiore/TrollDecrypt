@@ -44,6 +44,7 @@ after-stage::
 		--compile "$(THEOS_STAGING_DIR)/Applications/TrollDecrypt.app"$(ECHO_END)
 	$(ECHO_NOTHING)rm -rf "$(THEOS_STAGING_DIR)/Applications/TrollDecrypt.app/Assets.xcassets"$(ECHO_END)
 
+ifeq ($(PACKAGE_TIPA),1)
 	echo "Building .tipa"
 	$(ECHO_NOTHING)rm -rf Payload$(ECHO_END)
 	$(ECHO_NOTHING)rm -f TrollDecrypt.tipa$(ECHO_END)
@@ -52,3 +53,4 @@ after-stage::
 	$(ECHO_NOTHING)mv $(THEOS_STAGING_DIR)/Payload .$(ECHO_END)
 	$(ECHO_NOTHING)zip -q -r TrollDecrypt.tipa Payload$(ECHO_END)
 	$(ECHO_NOTHING)rm -rf Payload$(ECHO_END)
+endif
