@@ -222,6 +222,13 @@ TDDecryptionTaskOptions TDDecryptionTaskDefaultOptions(void) {
 }
 
 - (BOOL)decryptImageAtPath:(NSString *)imagePath forPID:(pid_t)pid outputPath:(NSString *)outputPath {
+    // Most images in a bundle are not FairPlay encrypted at all. Answering that
+    // from the file itself avoids waiting on dyld for every framework.
+    if (encryptionStateOfImageAtPath(imagePath) == TDEncryptionStateDecrypted) {
+        NSLog(@"image is not encrypted: %@", imagePath);
+        return [self _copyImageAtPath:imagePath toPath:outputPath];
+    }
+
     vm_map_t task = 0;
     if (task_for_pid(mach_task_self(), pid, &task)) {
         NSLog(@"failed to get task for pid %d", pid);
@@ -248,7 +255,7 @@ TDDecryptionTaskOptions TDDecryptionTaskDefaultOptions(void) {
     
     if (encryptionInfo.cryptid == 0) {
         NSLog(@"image is not encrypted");
-        return YES;
+        return [self _copyImageAtPath:imagePath toPath:outputPath];
     }
 
     if (!rebuildDecryptedImageAtPath(imagePath, task, mainImageInfo.loadAddress, &encryptionInfo, loadCommandAddress, outputPath)) {
@@ -257,6 +264,26 @@ TDDecryptionTaskOptions TDDecryptionTaskDefaultOptions(void) {
     }
 
     return YES;   
+}
+
+// In the full bundle flow the destination is the already copied, byte identical
+// image, so there is nothing to do. Only decrypt-binary-only mode, which makes
+// no copy up front, actually needs the file placed here.
+- (BOOL)_copyImageAtPath:(NSString *)imagePath toPath:(NSString *)outputPath {
+    if (!outputPath ||
+        [outputPath isEqualToString:imagePath] ||
+        [_fileManager fileExistsAtPath:outputPath]) {
+        return YES;
+    }
+
+    NSError *error = nil;
+    [_fileManager copyItemAtPath:imagePath toPath:outputPath error:&error];
+    if (error) {
+        NSLog(@"failed to copy image to %@, error: %@", outputPath, error);
+        return NO;
+    }
+
+    return YES;
 }
 
 - (BOOL)_buildIPAWithName:(NSString *)ipaName {

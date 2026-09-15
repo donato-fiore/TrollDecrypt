@@ -11,7 +11,18 @@ typedef struct MainImageInfo {
     BOOL     ok;
 } MainImageInfo_t;
 
+// Whether a Mach-O on disk still carries a live LC_ENCRYPTION_INFO command.
+// TDEncryptionStateUnknown means the file could not be classified (fat binary,
+// unreadable, ...) and the caller should fall back to inspecting the process.
+typedef NS_ENUM(NSInteger, TDEncryptionState) {
+    TDEncryptionStateUnknown = -1,
+    TDEncryptionStateDecrypted,
+    TDEncryptionStateEncrypted
+};
+
 NSString *NSStringFromMainImageInfo(MainImageInfo_t info);
+
+TDEncryptionState encryptionStateOfImageAtPath(NSString *path);
 
 MainImageInfo_t imageInfoForPIDWithRetry(const char *sourcePath, vm_map_t task, pid_t pid);
 
