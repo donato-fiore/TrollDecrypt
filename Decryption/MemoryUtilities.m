@@ -224,6 +224,7 @@ BOOL rebuildDecryptedImageAtPath(NSString *sourcePath,
 
     uint32_t cryptoff  = encryptionInfo->cryptoff;
     uint32_t cryptsize = encryptionInfo->cryptsize;
+    if (!cryptsize || !loadCommandAddress || loadCommandAddress < loadAddress) return NO;
 
     NSLog(@"Rebuilding decrypted image: %@", sourcePath);
     NSLog(@"Load address: 0x%llx", loadAddress);
@@ -310,6 +311,28 @@ BOOL rebuildDecryptedImageAtPath(NSString *sourcePath,
         // IMPORTANT: read from mapped memory at loadAddress + cryptoff
         if (!readProcessMemory(task, loadAddress + (uint64_t)cryptoff, decrypted, cryptsize)) {
             NSLog(@"failed to read decrypted bytes from task memory");
+            free(decrypted);
+            close(fd);
+            close(outputFd);
+            return NO;
+        }
+
+        // A readable mapping can still contain ciphertext or zero pages. Do not publish
+        // those bytes with cryptid cleared; the caller will retain the original binary.
+        BOOL changed = NO, nonzero = NO, comparisonOK = YES;
+        uint8_t encrypted[16384];
+        for (uint64_t offset = 0; offset < cryptsize;) {
+            size_t length = (size_t)MIN(sizeof(encrypted), cryptsize - offset);
+            ssize_t n;
+            do { n = pread(fd, encrypted, length, cryptoff + offset); } while (n < 0 && errno == EINTR);
+            if (n != (ssize_t)length) { comparisonOK = NO; break; }
+            const uint8_t *plain = (const uint8_t *)decrypted + offset;
+            changed |= memcmp(encrypted, plain, length) != 0;
+            for (size_t i = 0; i < length; i++) nonzero |= plain[i] != 0;
+            offset += length;
+        }
+        if (!comparisonOK || !changed || !nonzero) {
+            NSLog(@"No verified decrypted bytes were returned");
             free(decrypted);
             close(fd);
             close(outputFd);

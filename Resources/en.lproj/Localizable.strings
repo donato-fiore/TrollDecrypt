@@ -33,3 +33,5 @@ MANUAL_ENTRY_SUBTITLE = "Enter the bundle identifier of the application you want
 
 SHOW_IN_FILZA = "Show in Filza";
 SHOW_IN_FILES = "Show in Files";
+
+"EXPORTED_WITH_SKIPPED_FILES" = "Export complete. Some files could not be decrypted and were kept unchanged.";

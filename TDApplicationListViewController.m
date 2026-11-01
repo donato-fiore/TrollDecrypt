@@ -259,7 +259,10 @@ static inline NSUInteger getEffectiveIconFormat(void) {
 
             UIAlertController *resultAlert;
             if (success) {
-                resultAlert = [UIAlertController alertControllerWithTitle:[Localize localizedStringForKey:@"SUCCESS"] message:[Localize localizedStringForKey:@"DECRYPTION_COMPLETED"] preferredStyle:UIAlertControllerStyleAlert];
+                NSString *message = decryptionTask.hasUndecryptedFiles
+                    ? [Localize localizedStringForKey:@"EXPORTED_WITH_SKIPPED_FILES" fallback:@"Export complete. Some files could not be decrypted and were kept unchanged."]
+                    : [Localize localizedStringForKey:@"DECRYPTION_COMPLETED"];
+                resultAlert = [UIAlertController alertControllerWithTitle:[Localize localizedStringForKey:@"SUCCESS"] message:message preferredStyle:UIAlertControllerStyleAlert];
                 
                 if ([[UIApplication sharedApplication] canOpenURL:[NSURL URLWithString:@"filza://"]]) {
                     [resultAlert addAction:[UIAlertAction actionWithTitle:[Localize localizedStringForKey:@"SHOW_IN_FILZA"] style:UIAlertActionStyleDefault handler:^(UIAlertAction *action) {

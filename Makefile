@@ -8,7 +8,7 @@ include $(THEOS_MAKE_PATH)/aggregate.mk
 
 APPLICATION_NAME = TrollDecrypt
 
-TrollDecrypt_FILES = $(shell find . -path "*/.theos/*" -prune -o -path "./deps/SSZipArchive/*" -prune -o \( -name "*.m" -o -name "*.c" \) -print)
+TrollDecrypt_FILES = $(shell find . -path "*/.theos/*" -prune -o -path "./deps/SSZipArchive/*" -prune -o -path "./Tests" -prune -o \( -name "*.m" -o -name "*.c" \) -print)
 
 TrollDecrypt_FRAMEWORKS = UIKit CoreGraphics MobileCoreServices Security
 TrollDecrypt_PRIVATE_FRAMEWORKS = AppServerSupport RunningBoardServices
