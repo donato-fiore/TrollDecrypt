@@ -33,3 +33,5 @@ MANUAL_ENTRY_SUBTITLE = "请输入您要解密的应用的 Bundle Identifier。"
 
 SHOW_IN_FILZA = "在 Filza 中显示";
 SHOW_IN_FILES = "在文件中显示";
+
+"EXPORTED_WITH_SKIPPED_FILES" = "导出完成，部分文件未能解密，已保留原样。";

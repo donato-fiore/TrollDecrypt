@@ -6,6 +6,8 @@ SSZipArchive_FILES = $(shell find . -path "*/.theos/*" -prune -o \( -name "*.m" 
 
 SSZipArchive_PUBLIC_HEADERS = SSZipCommon.h SSZipArchive.h
 SSZipArchive_INSTALL_PATH = /Library/Frameworks
+SSZipArchive_FRAMEWORKS = Security
+SSZipArchive_LIBRARIES = z
 
 SSZipArchive_CFLAGS = -fobjc-arc
 SSZipArchive_CFLAGS += -DHAVE_INTTYPES_H -DHAVE_PKCRYPT -DHAVE_STDINT_H -DHAVE_WZAES -DHAVE_ZLIB -DZLIB_COMPAT # SSZipArchive

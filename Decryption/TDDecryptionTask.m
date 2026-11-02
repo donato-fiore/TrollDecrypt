@@ -5,6 +5,9 @@
 
 #import "LaunchdResponse.h"
 #import "MemoryUtilities.h"
+#import "MachOInspection.h"
+#import "SuspendedDecryption.h"
+#import "DecryptionOutput.h"
 #import <objc/runtime.h>
 #import <SSZipArchive/SSZipArchive.h>
 // #import <SSZipArchive.h>
@@ -21,6 +24,10 @@ TDDecryptionTaskOptions TDDecryptionTaskOptionsMake(bool decryptBinaryOnly) {
 TDDecryptionTaskOptions TDDecryptionTaskDefaultOptions(void) {
     return TDDecryptionTaskOptionsMake(false);
 }
+
+@interface TDDecryptionTask ()
+@property (nonatomic, readwrite) BOOL hasUndecryptedFiles;
+@end
 
 @implementation TDDecryptionTask {
     NSFileManager *_fileManager;
@@ -45,6 +52,7 @@ TDDecryptionTaskOptions TDDecryptionTaskDefaultOptions(void) {
                              options:(TDDecryptionTaskOptions)options {
     dispatch_async(dispatch_get_global_queue(QOS_CLASS_USER_INITIATED, 0), ^{
 
+        self.hasUndecryptedFiles = NO;
         NSString *bundleIdentifier = self->_applicationProxy.bundleIdentifier;
 
         void (^progress)(NSString *) = ^(NSString *msg) {
@@ -64,135 +72,191 @@ TDDecryptionTaskOptions TDDecryptionTaskDefaultOptions(void) {
 
         progress([Localize localizedStringForKey:@"LAUNCHING_APPLICATION"]);
 
-        LaunchdResponse_t response = [self->_applicationProxy td_launchProcess];
-        if (response.pid == -1) {
-            NSLog(@"Failed to launch application %@", bundleIdentifier);
-            NSError *launchError = [TDError errorWithCode:TDErrorCodeLaunchFailed];
-            dispatch_async(dispatch_get_main_queue(), ^{
-                if (completionHandler) completionHandler(NO, nil, launchError);
-            });
-            return;
+        // Without embedded frameworks, there is no reason to let dyld or app code run.
+        // Keeping the main executable suspended also avoids startup exits and side effects.
+        NSString *embeddedFrameworks = [self->_applicationProxy.bundleURL.path stringByAppendingPathComponent:@"Frameworks"];
+        BOOL needsRunningApp = [self->_fileManager contentsOfDirectoryAtPath:embeddedFrameworks error:nil].count > 0;
+        LaunchdResponse_t response = needsRunningApp ? [self->_applicationProxy td_launchProcess] : NIL_LAUNCHD_RESPONSE;
+        if (needsRunningApp && response.pid <= 0) {
+            NSLog(@"Application %@ could not start normally; trying suspended decryption", bundleIdentifier);
         }
 
         pid_t targetPID = response.pid;
+        @try {
 
-        if (!options.decryptBinaryOnly) {    
-            progress([Localize localizedStringForKey:@"COPYING_BUNDLE"]);
-            if (![self _copyApplicationBundle]) {
-                NSError *copyError = [TDError errorWithCode:TDErrorCodeApplicationBundleCopyFailed];
+            if (!options.decryptBinaryOnly) {    
+                progress([Localize localizedStringForKey:@"COPYING_BUNDLE"]);
+                if (![self _copyApplicationBundle]) {
+                    NSError *copyError = [TDError errorWithCode:TDErrorCodeApplicationBundleCopyFailed];
+                    dispatch_async(dispatch_get_main_queue(), ^{
+                        if (completionHandler) completionHandler(NO, nil, copyError);
+                    });
+                    return;
+                }
+            }
+
+            progress([Localize localizedStringForKey:@"DECRYPTING_BINARY"]);
+
+            NSString *imagePath = [self->_applicationProxy td_canonicalExecutablePath];
+
+            BOOL status = false;
+            NSString *fullOutputPath = nil;
+            if (options.decryptBinaryOnly) {
+                NSLog(@"Decrypting main binary only to output directory: %@", ROOT_OUTPUT_PATH);
+                NSLog(@"image path: %@", imagePath);
+                NSString *fileName = [NSString stringWithFormat:@"%@_%@_decrypted",
+                                      [imagePath lastPathComponent],
+                                      [self->_applicationProxy atl_shortVersionString]];
+
+                fullOutputPath = [ROOT_OUTPUT_PATH stringByAppendingPathComponent:fileName];
+                status = targetPID > 0 && [self decryptImageAtPath:imagePath forPID:targetPID outputPath:fullOutputPath];
+            } else {
+                status = targetPID > 0 && [self decryptImageAtPath:imagePath forPID:targetPID];
+            }
+
+            if (!status) {
+                NSString *outputExecutable = fullOutputPath ?: [self->_destinationPath stringByAppendingPathComponent:imagePath.lastPathComponent];
+                NSError *decryptError = nil;
+                status = TDWriteDecryptionOutput(imagePath, outputExecutable, ^BOOL(NSString *stagedPath, NSError **attemptError) {
+                    return TDDecryptSuspendedExecutable(self->_applicationProxy.bundleURL.path, stagedPath, attemptError);
+                }, &decryptError);
+                if (!status) {
+                    if (options.decryptBinaryOnly) {
+                        dispatch_async(dispatch_get_main_queue(), ^{
+                            if (completionHandler) completionHandler(NO, nil, decryptError);
+                        });
+                        return;
+                    }
+                    self.hasUndecryptedFiles = YES;
+                    NSLog(@"Keeping original main executable %@: %@", imagePath, decryptError);
+                }
+            }
+
+            if (options.decryptBinaryOnly) {
+                progress([Localize localizedStringForKey:@"DECRYPTION_COMPLETED"]);
+
                 dispatch_async(dispatch_get_main_queue(), ^{
-                    if (completionHandler) completionHandler(NO, nil, copyError);
+                    if (completionHandler) completionHandler(YES, [NSURL fileURLWithPath:fullOutputPath], nil);
                 });
                 return;
             }
-        }
 
-        progress([Localize localizedStringForKey:@"DECRYPTING_BINARY"]);
-
-        NSString *imagePath = [self->_applicationProxy td_canonicalExecutablePath];
-
-        BOOL status = false;
-        NSString *fullOutputPath = nil;
-        if (options.decryptBinaryOnly) {
-            NSLog(@"Decrypting main binary only to output directory: %@", ROOT_OUTPUT_PATH);
-            NSLog(@"image path: %@", imagePath);
-            NSString *fileName = [NSString stringWithFormat:@"%@_%@_decrypted",
-                                  [imagePath lastPathComponent],
-                                  [self->_applicationProxy atl_shortVersionString]];
-
-            fullOutputPath = [ROOT_OUTPUT_PATH stringByAppendingPathComponent:fileName];
-            status = [self decryptImageAtPath:imagePath forPID:targetPID outputPath:fullOutputPath];
-        } else {
-            status = [self decryptImageAtPath:imagePath forPID:targetPID];
-        }
-
-        if (!status) {
-            NSError *decryptError = [TDError errorWithCode:TDErrorCodeBinaryDecryptionFailed];
-            dispatch_async(dispatch_get_main_queue(), ^{
-                if (completionHandler) completionHandler(NO, nil, decryptError);
-            });
-            return;
-        }
-
-        if (options.decryptBinaryOnly) {
-            kill(targetPID, SIGKILL);
-            progress([Localize localizedStringForKey:@"DECRYPTION_COMPLETED"]);
-
-            dispatch_async(dispatch_get_main_queue(), ^{
-                if (completionHandler) completionHandler(YES, [NSURL fileURLWithPath:fullOutputPath], nil);
-            });
-            return;
-        }
-
-        NSString *originalAppPath = self->_applicationProxy.bundleURL.path;
-        NSString *frameworksPath = [originalAppPath stringByAppendingPathComponent:@"Frameworks"];
-        NSError *fsError = nil;
-        NSArray *frameworkContents = [self->_fileManager contentsOfDirectoryAtPath:frameworksPath error:&fsError];
-        if (!fsError && frameworkContents.count > 0) {
-            NSInteger frameworkCount = 0;
-            for (NSString *item in frameworkContents) {
-                if ([item hasSuffix:@".framework"]) frameworkCount++;
-            }
-            NSInteger currentFrameworkIndex = 0;
-            for (NSString *item in frameworkContents) {
-                if ([item hasSuffix:@".framework"]) {
-                    currentFrameworkIndex++;
-                    NSString *frameworkName = [item stringByDeletingPathExtension]; 
-                    NSString *frameworkBinaryPath = [[frameworksPath stringByAppendingPathComponent:item] stringByAppendingPathComponent:frameworkName]; 
-                    if ([self->_fileManager fileExistsAtPath:frameworkBinaryPath]) {
-                        progress([NSString stringWithFormat:@"Decrypting framework %ld/%ld: %@...", (long)currentFrameworkIndex, (long)frameworkCount, frameworkName]);
-                        if (![self decryptImageAtPath:frameworkBinaryPath forPID:targetPID]) {
-                            NSLog(@"Failed to decrypt framework %@", item);
+            NSString *originalAppPath = self->_applicationProxy.bundleURL.path.stringByResolvingSymlinksInPath;
+            NSString *frameworksPath = [originalAppPath stringByAppendingPathComponent:@"Frameworks"];
+            NSError *fsError = nil;
+            NSArray *frameworkContents = [self->_fileManager contentsOfDirectoryAtPath:frameworksPath error:&fsError];
+            if (!fsError && frameworkContents.count > 0) {
+                NSInteger frameworkCount = 0;
+                for (NSString *item in frameworkContents) {
+                    if ([item hasSuffix:@".framework"]) frameworkCount++;
+                }
+                NSInteger currentFrameworkIndex = 0;
+                for (NSString *item in frameworkContents) {
+                    if ([item hasSuffix:@".framework"]) {
+                        currentFrameworkIndex++;
+                        NSString *frameworkName = [item stringByDeletingPathExtension]; 
+                        NSString *frameworkBinaryPath = [[frameworksPath stringByAppendingPathComponent:item] stringByAppendingPathComponent:frameworkName]; 
+                        if ([self->_fileManager fileExistsAtPath:frameworkBinaryPath]) {
+                            progress([NSString stringWithFormat:@"Decrypting framework %ld/%ld: %@...", (long)currentFrameworkIndex, (long)frameworkCount, frameworkName]);
+                            if (![self decryptImageAtPath:frameworkBinaryPath forPID:targetPID]) {
+                                self.hasUndecryptedFiles = YES;
+                                NSLog(@"Keeping original framework %@", item);
+                            }
                         }
                     }
                 }
             }
-        }
 
-        NSInteger extensionCount = self->_applicationProxy.plugInKitPlugins.count;
-        NSInteger currentExtensionIndex = 0;
-
-        for (LSPlugInKitProxy *extension in self->_applicationProxy.plugInKitPlugins) {
-            LaunchdResponse_t extensionResponse = [extension td_launchProcess];
-            if (extensionResponse.pid == -1) {
-                NSLog(@"Failed to launch extension %@", extension.bundleIdentifier);
-                continue;
+            NSError *extensionError = nil;
+            NSArray<NSString *> *extensions = TDExtensionBundles(originalAppPath, &extensionError);
+            if (extensionError) {
+                self.hasUndecryptedFiles = YES;
+                NSLog(@"Some extensions could not be enumerated; keeping their original files: %@", extensionError);
+            }
+            NSInteger currentExtensionIndex = 0;
+            for (NSString *bundlePath in extensions) {
+                currentExtensionIndex++;
+                progress([NSString stringWithFormat:@"Decrypting extension %ld/%ld: %@...",
+                    (long)currentExtensionIndex, (long)extensions.count, bundlePath.lastPathComponent]);
+                NSDictionary *info = [NSDictionary dictionaryWithContentsOfFile:[bundlePath stringByAppendingPathComponent:@"Info.plist"]];
+                NSString *executable = info[@"CFBundleExecutable"];
+                NSString *relativeBundle = [bundlePath substringFromIndex:originalAppPath.length + 1];
+                if (![executable isKindOfClass:NSString.class] || !executable.length ||
+                    ![executable isEqualToString:executable.lastPathComponent]) {
+                    self.hasUndecryptedFiles = YES;
+                    continue;
+                }
+                NSString *outputBundle = [self->_destinationPath stringByAppendingPathComponent:relativeBundle];
+                NSString *outputExecutable = [outputBundle stringByAppendingPathComponent:executable];
+                NSError *decryptError = nil;
+                NSString *sourceExecutable = [bundlePath stringByAppendingPathComponent:executable];
+                if (!TDWriteDecryptionOutput(sourceExecutable, outputExecutable, ^BOOL(NSString *stagedPath, NSError **attemptError) {
+                    return TDDecryptSuspendedExecutable(bundlePath, stagedPath, attemptError);
+                }, &decryptError)) {
+                    NSLog(@"Keeping original extension %@: %@", relativeBundle, decryptError);
+                    self.hasUndecryptedFiles = YES;
+                }
             }
 
-            currentExtensionIndex++;
-            progress([NSString stringWithFormat:@"Decrypting extension %ld/%ld...",
-                    (long)currentExtensionIndex, (long)extensionCount]);
-
-            NSString *extensionImagePath = [extension td_canonicalExecutablePath];
-            if (![self decryptImageAtPath:extensionImagePath forPID:extensionResponse.pid]) {
-                NSLog(@"Failed to decrypt main executable for extension %@", extension.bundleIdentifier);
+            NSError *inspectionError = nil;
+            NSArray<NSString *> *encrypted = TDEncryptedFilesInBundle(self->_destinationPath, &inspectionError);
+            if (!encrypted || encrypted.count) {
+                self.hasUndecryptedFiles = YES;
+                NSLog(@"Exporting with remaining encrypted or unverified files: %@ (%@)", encrypted, inspectionError);
             }
 
-            kill(extensionResponse.pid, SIGKILL);
-        }
+            // A skipped binary still needs its original FairPlay metadata. Clean SC_Info
+            // only when the entire corresponding output bundle is confirmed decrypted.
+            NSMutableArray<NSString *> *outputBundles = [NSMutableArray arrayWithObject:self->_destinationPath];
+            for (NSString *bundlePath in extensions) {
+                NSString *relative = [bundlePath substringFromIndex:originalAppPath.length + 1];
+                [outputBundles addObject:[self->_destinationPath stringByAppendingPathComponent:relative]];
+            }
+            for (NSString *outputBundle in outputBundles) {
+                NSString *scInfo = [outputBundle stringByAppendingPathComponent:@"SC_Info"];
+                if (![self->_fileManager fileExistsAtPath:scInfo]) continue;
+                if (!encrypted) continue;
+                NSString *prefix = [outputBundle isEqualToString:self->_destinationPath] ? @""
+                    : [[outputBundle substringFromIndex:self->_destinationPath.length + 1] stringByAppendingString:@"/"];
+                BOOL needsMetadata = [outputBundle isEqualToString:self->_destinationPath] ? encrypted.count > 0 :
+                    [encrypted indexOfObjectPassingTest:^BOOL(NSString *path, NSUInteger idx, BOOL *stop) {
+                    return [path hasPrefix:prefix];
+                }] != NSNotFound;
+                if (!needsMetadata) {
+                    NSError *cleanupError = nil;
+                    if (![self->_fileManager removeItemAtPath:scInfo error:&cleanupError]) {
+                        NSLog(@"Keeping SC_Info at %@: %@", scInfo, cleanupError);
+                    }
+                }
+            }
 
-        progress([Localize localizedStringForKey:@"BUILDING_IPA"]);
-        NSString *outputIPAName =
-            [NSString stringWithFormat:@"%@_%@_decrypted.ipa",
-             bundleIdentifier, [self->_applicationProxy atl_shortVersionString]];
+            progress([Localize localizedStringForKey:@"BUILDING_IPA"]);
+            NSString *outputIPAName =
+                [NSString stringWithFormat:@"%@_%@_decrypted.ipa",
+                 bundleIdentifier, [self->_applicationProxy atl_shortVersionString]];
 
-        if (![self _buildIPAWithName:outputIPAName]) {
-            NSError *ipaError = [TDError errorWithCode:TDErrorCodeIPAConstructionFailed];
+            if (![self _buildIPAWithName:outputIPAName]) {
+                NSError *ipaError = [TDError errorWithCode:TDErrorCodeIPAConstructionFailed];
+                dispatch_async(dispatch_get_main_queue(), ^{
+                    if (completionHandler) completionHandler(NO, nil, ipaError);
+                });
+                return;
+            }
+
+            progress([Localize localizedStringForKey:@"DECRYPTION_COMPLETED"]);
+
+            NSString *ipaPath = [ROOT_OUTPUT_PATH stringByAppendingPathComponent:outputIPAName];
+            NSURL *url = [NSURL fileURLWithPath:ipaPath];
+
             dispatch_async(dispatch_get_main_queue(), ^{
-                if (completionHandler) completionHandler(NO, nil, ipaError);
+                if (completionHandler) completionHandler(YES, url, nil);
             });
-            return;
+        } @finally {
+            if (targetPID > 0) kill(targetPID, SIGKILL);
+            if (self->_workingDirectoryPath) {
+                [self->_fileManager removeItemAtPath:self->_workingDirectoryPath error:nil];
+            }
         }
-
-        kill(targetPID, SIGKILL);
-        progress([Localize localizedStringForKey:@"DECRYPTION_COMPLETED"]);
-
-        NSString *ipaPath = [ROOT_OUTPUT_PATH stringByAppendingPathComponent:outputIPAName];
-        NSURL *url = [NSURL fileURLWithPath:ipaPath];
-
-        dispatch_async(dispatch_get_main_queue(), ^{
-            if (completionHandler) completionHandler(YES, url, nil);
-        });
     });
 }
 
@@ -202,61 +266,55 @@ TDDecryptionTaskOptions TDDecryptionTaskDefaultOptions(void) {
     NSString *rhs = [imagePath componentsSeparatedByString:delimeter].lastObject;
     NSString *outputPath = [_destinationPath stringByAppendingString:rhs];
 
-    NSString *scInfoPath = [[outputPath stringByDeletingLastPathComponent] stringByAppendingPathComponent:@"SC_Info"];
-    if ([_fileManager fileExistsAtPath:scInfoPath]) {
-        NSError *removeError = nil;
-        NSLog(@"Removing SC_Info at path: %@", scInfoPath);
-        [_fileManager removeItemAtPath:scInfoPath error:&removeError];
-        if (removeError) {
-            NSLog(@"failed to remove existing SC_Info at path %@, error: %@", scInfoPath, removeError);
-            return NO;
-        }
-    }
-
-    // if (!rebuildDecryptedImageAtPath(imagePath, task, mainImageInfo.loadAddress, &encryptionInfo, loadCommandAddress, outputPath)) {
-    //     NSLog(@"failed to rebuild decrypted image for pid %d", pid);
-    //     return NO;
-    // }
-
     return [self decryptImageAtPath:imagePath forPID:pid outputPath:outputPath];
 }
 
 - (BOOL)decryptImageAtPath:(NSString *)imagePath forPID:(pid_t)pid outputPath:(NSString *)outputPath {
+    NSArray<TDMachOImage *> *sourceImages = TDInspectMachO(imagePath, nil);
+    if (!sourceImages.count) return NO;
+    BOOL encrypted = [sourceImages indexOfObjectPassingTest:^BOOL(TDMachOImage *image, NSUInteger idx, BOOL *stop) {
+        return image.encryption.cryptid != 0;
+    }] != NSNotFound;
+    if (!encrypted) return TDWriteDecryptionOutput(imagePath, outputPath, ^BOOL(NSString *stagedPath, NSError **attemptError) { return YES; }, nil);
+    // The running-process rebuilder uses thin-image file offsets. Other layouts must
+    // use the suspended path or be retained unchanged rather than patching wrong bytes.
+    TDMachOImage *sourceImage = sourceImages.firstObject;
+    if (sourceImages.count != 1 || sourceImage.fileOffset != 0 ||
+        sourceImage.encryptedVMOffset != sourceImage.encryption.cryptoff) return NO;
     vm_map_t task = 0;
     if (task_for_pid(mach_task_self(), pid, &task)) {
         NSLog(@"failed to get task for pid %d", pid);
         return NO;
     }
 
-    MainImageInfo_t mainImageInfo = imageInfoForPIDWithRetry([imagePath UTF8String], task, pid);
-    if (!mainImageInfo.ok) {
-        NSLog(@"failed to get main image load address for pid %d", pid);
-        return NO;
+    @try {
+        MainImageInfo_t mainImageInfo = imageInfoForPIDWithRetry([imagePath UTF8String], task, pid);
+        if (!mainImageInfo.ok) {
+            NSLog(@"failed to get main image load address for pid %d", pid);
+            return NO;
+        }
+
+        NSLog(@"main image info: %@", NSStringFromMainImageInfo(mainImageInfo));
+
+        __block struct encryption_info_command encryptionInfo = {0};
+        uint64_t loadCommandAddress = 0;
+        if (!readEncryptionInfo(task, mainImageInfo.loadAddress, &encryptionInfo, &loadCommandAddress)) {
+            NSLog(@"failed to read encryption info for pid %d", pid);
+            return NO;
+        }
+
+        NSLog(@"encryption info: cryptoff=0x%x cryptsize=0x%x cryptid=%d",
+              encryptionInfo.cryptoff, encryptionInfo.cryptsize, encryptionInfo.cryptid);
+        if (encryptionInfo.cryptoff != sourceImage.encryption.cryptoff ||
+            encryptionInfo.cryptsize != sourceImage.encryption.cryptsize) return NO;
+
+        return TDWriteDecryptionOutput(imagePath, outputPath, ^BOOL(NSString *stagedPath, NSError **attemptError) {
+            return rebuildDecryptedImageAtPath(imagePath, task, mainImageInfo.loadAddress,
+                &encryptionInfo, loadCommandAddress, stagedPath);
+        }, nil);
+    } @finally {
+        mach_port_deallocate(mach_task_self(), task);
     }
-
-    NSLog(@"main image info: %@", NSStringFromMainImageInfo(mainImageInfo));
-
-    struct encryption_info_command encryptionInfo = {0};
-    uint64_t loadCommandAddress = 0;
-    if (!readEncryptionInfo(task, mainImageInfo.loadAddress, &encryptionInfo, &loadCommandAddress)) {
-        NSLog(@"failed to read encryption info for pid %d", pid);
-        return NO;
-    }
-
-    NSLog(@"encryption info: cryptoff=0x%x cryptsize=0x%x cryptid=%d",
-          encryptionInfo.cryptoff, encryptionInfo.cryptsize, encryptionInfo.cryptid);
-    
-    if (encryptionInfo.cryptid == 0) {
-        NSLog(@"image is not encrypted");
-        return YES;
-    }
-
-    if (!rebuildDecryptedImageAtPath(imagePath, task, mainImageInfo.loadAddress, &encryptionInfo, loadCommandAddress, outputPath)) {
-        NSLog(@"failed to rebuild decrypted image for pid %d", pid);
-        return NO;
-    }
-
-    return YES;   
 }
 
 - (BOOL)_buildIPAWithName:(NSString *)ipaName {
@@ -344,16 +402,9 @@ TDDecryptionTaskOptions TDDecryptionTaskDefaultOptions(void) {
 }
 
 - (BOOL)_copyApplicationBundle {
-    NSString *workingPath = [ROOT_OUTPUT_PATH stringByAppendingPathComponent:@".work"];
-
-    NSError *error = nil;
-    if ([_fileManager fileExistsAtPath:workingPath]) {
-        [_fileManager removeItemAtPath:workingPath error:&error];
-        if (error) {
-            NSLog(@"Failed to remove existing working directory: %@, error: %@", workingPath, error);
-            return NO;
-        }
-    }
+    NSString *workingPath = [ROOT_OUTPUT_PATH stringByAppendingPathComponent:
+        [@".work-" stringByAppendingString:NSUUID.UUID.UUIDString]];
+    _workingDirectoryPath = workingPath;
 
     NSString *payloadPath = [workingPath stringByAppendingPathComponent:@"Payload"];
 

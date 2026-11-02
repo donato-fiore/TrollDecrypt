@@ -1,6 +1,8 @@
 #import <Foundation/Foundation.h>
 
+#ifndef ROOT_OUTPUT_PATH
 #define ROOT_OUTPUT_PATH @"/var/mobile/Documents/TrollDecrypt"
+#endif
 
 @class LSApplicationProxy;
 
@@ -15,6 +17,7 @@ TDDecryptionTaskOptions TDDecryptionTaskDefaultOptions(void);
 
 @property (nonatomic, strong) LSApplicationProxy *applicationProxy;
 @property (nonatomic, copy) void (^progressHandler)(NSString *progress);
+@property (nonatomic, readonly) BOOL hasUndecryptedFiles;
 // @property (nonatomic, copy) void (^completionHandler)(BOOL success, NSURL *outputURL, NSError *error);
 
 - (instancetype)initWithApplicationProxy:(LSApplicationProxy *)application;

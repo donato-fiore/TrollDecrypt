@@ -12,7 +12,8 @@ LaunchdResponse_t responseFromXPCObject(xpc_object_t responseObj) {
     if (responseObj) {
         response.job_handle = NSUUIDFromXPCUUID(xpc_dictionary_get_value(responseObj, "job-handle"));
         response.job_state = (NSUInteger)xpc_dictionary_get_uint64(responseObj, "job-state");
-        response.pid = (pid_t)xpc_dictionary_get_int64(responseObj, "pid");
+        pid_t pid = (pid_t)xpc_dictionary_get_int64(responseObj, "pid");
+        response.pid = pid > 0 ? pid : -1;
         response.removing = xpc_dictionary_get_bool(responseObj, "removing");
     }
     

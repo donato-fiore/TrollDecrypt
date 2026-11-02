@@ -49,7 +49,7 @@
     kern_return_t kr = _launch_job_routine(OSLaunchdJobSelectorSubmitAndStart, request, &response);
     NSLog(@"launch_job_routine returned: %s", mach_error_string(kr));
 
-    if (kr != KERN_SUCCESS || xpc_get_type(response) != XPC_TYPE_DICTIONARY) return NIL_LAUNCHD_RESPONSE;
+    if (kr != KERN_SUCCESS || !response || xpc_get_type(response) != XPC_TYPE_DICTIONARY) return NIL_LAUNCHD_RESPONSE;
 
     return responseFromXPCObject(response);
 }

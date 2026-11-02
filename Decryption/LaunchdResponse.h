@@ -18,7 +18,7 @@ extern void xpc_dictionary_set_uint64(xpc_object_t xdict, const char* key, uint6
 extern const uint8_t* xpc_uuid_get_bytes(xpc_object_t xuuid);
 #endif
 
-#define NIL_LAUNCHD_RESPONSE (LaunchdResponse_t){ nil, 0, 0, NO }
+#define NIL_LAUNCHD_RESPONSE (LaunchdResponse_t){ nil, 0, -1, NO }
 
 typedef struct LaunchdResponse {
     NSUUID *job_handle;

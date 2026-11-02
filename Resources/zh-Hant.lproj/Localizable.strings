@@ -33,3 +33,5 @@ MANUAL_ENTRY_SUBTITLE = "請輸入您想要解密的應用程式套件識別碼�
 
 SHOW_IN_FILZA = "在 Filza 中顯示";
 SHOW_IN_FILES = "在檔案中顯示";
+
+"EXPORTED_WITH_SKIPPED_FILES" = "匯出完成，部分檔案未能解密，已保留原樣。";
