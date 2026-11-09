@@ -8,13 +8,8 @@
 kern_return_t mach_vm_read_overwrite(vm_map_read_t target_task, mach_vm_address_t address, mach_vm_size_t size, mach_vm_address_t data, mach_vm_size_t *outsize);
 kern_return_t mach_vm_region(vm_map_read_t target_task, mach_vm_address_t *address, mach_vm_size_t *size, vm_region_flavor_t flavor, vm_region_info_t info, mach_msg_type_number_t *infoCnt, mach_port_t *object_name);
 
-static void removePrefix(char *str, const char *prefix) {
-    size_t len_str = strlen(str);
-    size_t len_prefix = strlen(prefix);
-
-    if (len_str >= len_prefix && strncmp(str, prefix, len_prefix) == 0) {
-        memmove(str, str + len_prefix, len_str - len_prefix + 1);
-    }
+static const char *pathWithoutPrivatePrefix(const char *path) {
+    return strncmp(path, "/private/", 9) == 0 ? path + 8 : path;
 }
 
 static bool readFully(int fd, void *buffer, size_t size) {
@@ -130,12 +125,7 @@ MainImageInfo_t imageInfoForPIDWithRetry(const char *sourcePath, vm_map_t task, 
                 continue;
             }
 
-            // sometimes pathbuffer is /private prefixed
-            // sometimes sourcePath is /private prefixed
-            bool match = strcmp(pathBuffer, sourcePath) == 0;
-            if (!match) removePrefix(pathBuffer, "/private");
-
-            if (strcmp(pathBuffer, sourcePath) == 0) {
+            if (strcmp(pathWithoutPrivatePrefix(pathBuffer), pathWithoutPrivatePrefix(sourcePath)) == 0) {
                 NSString *pathString = [NSString stringWithUTF8String:pathBuffer];
                 NSLog(@"found main executable image for pid %d: %@", pid, pathString);
                 MainImageInfo_t result = {
