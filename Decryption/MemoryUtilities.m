@@ -1,9 +1,8 @@
 #import "MemoryUtilities.h"
+#import "MachORebuilder.h"
 
 #define MAX_DYLD_INFO_RETRIES 300
 #define DYLD_INFO_RETRY_DELAY_US 10000
-
-#define MALLOC_CHUNK_SIZE (1 << 20) // 1 MB
 
 kern_return_t mach_vm_read_overwrite(vm_map_read_t target_task, mach_vm_address_t address, mach_vm_size_t size, mach_vm_address_t data, mach_vm_size_t *outsize);
 kern_return_t mach_vm_region(vm_map_read_t target_task, mach_vm_address_t *address, mach_vm_size_t *size, vm_region_flavor_t flavor, vm_region_info_t info, mach_msg_type_number_t *infoCnt, mach_port_t *object_name);
@@ -15,30 +14,6 @@ static void removePrefix(char *str, const char *prefix) {
     if (len_str >= len_prefix && strncmp(str, prefix, len_prefix) == 0) {
         memmove(str, str + len_prefix, len_str - len_prefix + 1);
     }
-}
-
-static bool readFully(int fd, void *buffer, size_t size) {
-    size_t totalRead = 0;
-    while (totalRead < size) {
-        ssize_t bytesRead = read(fd, (uint8_t *)buffer + totalRead, size - totalRead);
-        if (bytesRead <= 0) {
-            return NO;
-        }
-        totalRead += bytesRead;
-    }
-    return YES;
-}
-
-static bool writeFully(int fd, const void *buffer, size_t size) {
-    size_t totalWritten = 0;
-    while (totalWritten < size) {
-        ssize_t bytesWritten = write(fd, (const uint8_t *)buffer + totalWritten, size - totalWritten);
-        if (bytesWritten <= 0) {
-            return NO;
-        }
-        totalWritten += bytesWritten;
-    }
-    return YES;
 }
 
 static BOOL readProcessMemory(vm_map_t task, uint64_t address, void *buffer, size_t size) {
@@ -154,262 +129,24 @@ MainImageInfo_t imageInfoForPIDWithRetry(const char *sourcePath, vm_map_t task, 
     return (MainImageInfo_t){.ok = NO};
 }
 
-BOOL readEncryptionInfo(vm_map_t task, uint64_t address,
-                        struct encryption_info_command *encryptionInfo,
-                        uint64_t *loadCommandAddress) {
-    if (!encryptionInfo || !loadCommandAddress) {
-        NSLog(@"invlaid encryptionInfo or loadCommandAddress");
-        return NO;
-    }
-
-    struct mach_header_64 machHeader;
-    if (!readProcessMemory(task, address, &machHeader, sizeof(machHeader))) {
-        NSLog(@"failed to read mach header");
-        return NO;
-    }
-
-    uint64_t offset = 0;
-    switch (machHeader.magic) {
-        case MH_MAGIC_64:
-            offset = sizeof(struct mach_header_64);
-            break;
-        case MH_MAGIC:
-            offset = sizeof(struct mach_header);
-            break;
-        default:
-            NSLog(@"unknown Mach-O magic: 0x%x", machHeader.magic);
-            return NO;
-    }
-
-    if (machHeader.ncmds == 0) {
-        NSLog(@"no load commands found");
-        return NO;
-    }
-
-    for (uint32_t i = 0; i < machHeader.ncmds; i++) {
-        struct load_command loadCommand;
-        if (!readProcessMemory(task, address + offset, &loadCommand, sizeof(loadCommand))) {
-            NSLog(@"failed to read load command");
-            return NO;
-        }
-
-        if (loadCommand.cmd == LC_ENCRYPTION_INFO || loadCommand.cmd == LC_ENCRYPTION_INFO_64) {
-            struct encryption_info_command encInfo;
-            if (!readProcessMemory(task, address + offset, &encInfo, sizeof(encInfo))) {
-                NSLog(@"failed to read encryption info command");
-                return NO;
-            }
-
-            *encryptionInfo = encInfo;
-            *loadCommandAddress = address + offset;
-            return YES;
-        }
-
-        offset += loadCommand.cmdsize;
-    }
-
-    return YES;
+NSData *readLoadedImageHeader(vm_map_t task, uint64_t address) {
+    struct mach_header_64 header = {0};
+    if (!readProcessMemory(task, address, &header, sizeof(header))) return nil;
+    if (header.magic != MH_MAGIC_64 && header.magic != MH_MAGIC) return nil;
+    size_t headerSize = header.magic == MH_MAGIC_64 ? sizeof(header) : sizeof(struct mach_header);
+    if (header.sizeofcmds > 16 * 1024 * 1024 ||
+        header.ncmds > header.sizeofcmds / sizeof(struct load_command)) return nil;
+    size_t length = headerSize + header.sizeofcmds;
+    if (address > UINT64_MAX - length) return nil;
+    NSMutableData *data = [NSMutableData dataWithLength:length];
+    return readProcessMemory(task, address, data.mutableBytes, data.length) ? data : nil;
 }
 
-BOOL rebuildDecryptedImageAtPath(NSString *sourcePath,
-                                 vm_map_t task,
-                                 uint64_t loadAddress,
-                                 struct encryption_info_command *encryptionInfo,
-                                 uint64_t loadCommandAddress,
-                                 NSString *outputPath) {
-    if (!encryptionInfo) {
-        NSLog(@"encryptionInfo is NULL");
-        return NO;
-    }
-
-    uint32_t cryptoff  = encryptionInfo->cryptoff;
-    uint32_t cryptsize = encryptionInfo->cryptsize;
-
-    NSLog(@"Rebuilding decrypted image: %@", sourcePath);
-    NSLog(@"Load address: 0x%llx", loadAddress);
-    NSLog(@"cryptoff=0x%x cryptsize=0x%x cryptid=%d",
-          cryptoff, cryptsize, encryptionInfo->cryptid);
-
-    int fd = open(sourcePath.UTF8String, O_RDONLY);
-    if (fd < 0) {
-        NSLog(@"open source failed (%d): %@", errno, sourcePath);
-        return NO;
-    }
-
-    off_t fileSize = lseek(fd, 0, SEEK_END);
-    if (fileSize < 0) {
-        NSLog(@"lseek end failed (%d)", errno);
-        close(fd);
-        return NO;
-    }
-
-    lseek(fd, 0, SEEK_SET);
-
-    uint64_t cryptEnd = (uint64_t)cryptoff + (uint64_t)cryptsize;
-    if (cryptEnd > (uint64_t)fileSize) {
-        NSLog(@"crypt region outside file: cryptEnd=0x%llx fileSize=0x%llx",
-              cryptEnd, (uint64_t)fileSize);
-        close(fd);
-        return NO;
-    }
-
-    // NSString *debugOutputPath = [outputPath stringByAppendingString:@".decrypted"];
-    int outputFd = open(outputPath.UTF8String, O_RDWR | O_CREAT | O_TRUNC, 0644);
-    if (outputFd < 0) {
-        NSLog(@"open output failed (%d): %@", errno, outputPath);
-        close(fd);
-        return NO;
-    }
-
-    // Leading [0, cryptoff)
-    if (lseek(fd, 0, SEEK_SET) < 0) {
-        NSLog(@"lseek set failed (%d)", errno);
-        close(fd);
-        close(outputFd);
-        return NO;
-    }
-
-    if (cryptoff > 0) {
-        void *leading = malloc(cryptoff);
-        if (!leading) {
-            NSLog(@"malloc leading failed");
-            close(fd);
-            close(outputFd);
-            return NO;
-        }
-
-        if (!readFully(fd, leading, cryptoff)) {
-            NSLog(@"read leading failed (%d)", errno);
-            free(leading);
-            close(fd);
-            close(outputFd);
-            return NO;
-        }
-
-        if (!writeFully(outputFd, leading, cryptoff)) {
-            NSLog(@"write leading failed (%d)", errno);
-            free(leading);
-            close(fd);
-            close(outputFd);
-            return NO;
-        }
-
-        free(leading);
-    }
-
-    // [cryptoff .. cryptoff+cryptsize)
-    if (cryptsize > 0) {
-        void *decrypted = malloc(cryptsize);
-        if (!decrypted) {
-            NSLog(@"malloc decrypted failed");
-            close(fd);
-            close(outputFd);
-            return NO;
-        }
-
-        // IMPORTANT: read from mapped memory at loadAddress + cryptoff
-        if (!readProcessMemory(task, loadAddress + (uint64_t)cryptoff, decrypted, cryptsize)) {
-            NSLog(@"failed to read decrypted bytes from task memory");
-            free(decrypted);
-            close(fd);
-            close(outputFd);
-            return NO;
-        }
-
-        if (!writeFully(outputFd, decrypted, cryptsize)) {
-            NSLog(@"write decrypted failed (%d)", errno);
-            free(decrypted);
-            close(fd);
-            close(outputFd);
-            return NO;
-        }
-
-        free(decrypted);
-    }
-
-    // Trailing [cryptEnd, EOF)
-    uint64_t trailingSize = (uint64_t)fileSize - cryptEnd;
-    if (trailingSize > 0) {
-        uint8_t *buf = malloc(MALLOC_CHUNK_SIZE);
-        if (!buf) {
-            NSLog(@"malloc trailing buf failed");
-            close(fd);
-            close(outputFd);
-            return NO;
-        }
-
-        if (lseek(fd, (off_t)cryptEnd, SEEK_SET) < 0) {
-            NSLog(@"lseek to trailing failed (%d)", errno);
-            free(buf);
-            close(fd);
-            close(outputFd);
-            return NO;
-        }
-
-        uint64_t left = trailingSize;
-        while (left > 0) {
-            size_t toRead = (left > MALLOC_CHUNK_SIZE) ? MALLOC_CHUNK_SIZE : (size_t)left;
-
-            if (!readFully(fd, buf, toRead)) {
-                NSLog(@"read trailing failed (%d)", errno);
-                free(buf);
-                close(fd);
-                close(outputFd);
-                return NO;
-            }
-
-            if (!writeFully(outputFd, buf, toRead)) {
-                NSLog(@"write trailing failed (%d)", errno);
-                free(buf);
-                close(fd);
-                close(outputFd);
-                return NO;
-            }
-
-            left -= toRead;
-        }
-
-        free(buf);
-    }
-
-    if (loadCommandAddress) {
-        off_t cmdOff = (off_t)((uint64_t)loadCommandAddress - (uint64_t)loadAddress);
-
-        if (lseek(outputFd, cmdOff, SEEK_SET) < 0) {
-            NSLog(@"lseek to enc cmd failed (%d)", errno);
-            close(fd);
-            close(outputFd);
-            return NO;
-        }
-
-        struct encryption_info_command outputEncInfo = {0};
-        if (!readFully(outputFd, &outputEncInfo, sizeof(outputEncInfo))) {
-            NSLog(@"read enc cmd failed (%d)", errno);
-            close(fd);
-            close(outputFd);
-            return NO;
-        }
-
-        outputEncInfo.cryptid = 0;
-
-        if (lseek(outputFd, cmdOff, SEEK_SET) < 0) {
-            NSLog(@"lseek back to enc cmd failed (%d)", errno);
-            close(fd);
-            close(outputFd);
-            return NO;
-        }
-
-        if (!writeFully(outputFd, &outputEncInfo, sizeof(outputEncInfo))) {
-            NSLog(@"write enc cmd failed (%d)", errno);
-            close(fd);
-            close(outputFd);
-            return NO;
-        }
-    }
-
-    close(fd);
-    close(outputFd);
-
-
-    return YES;
+BOOL rebuildDecryptedImageAtPath(NSString *sourcePath, vm_map_t task,
+                                 uint64_t loadAddress, TDMachOImage *image,
+                                 NSString *outputPath, NSError **error) {
+    return TDRebuildMachOSlice(sourcePath, image, outputPath, ^BOOL(uint64_t offset, void *buffer, size_t size) {
+        if (loadAddress > UINT64_MAX - offset || loadAddress + offset > UINT64_MAX - size) return NO;
+        return readProcessMemory(task, loadAddress + offset, buffer, size);
+    }, error);
 }

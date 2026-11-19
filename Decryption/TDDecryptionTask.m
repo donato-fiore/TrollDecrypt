@@ -5,6 +5,9 @@
 
 #import "LaunchdResponse.h"
 #import "MemoryUtilities.h"
+#import "MachOInspection.h"
+#import "MachORebuilder.h"
+#import "DecryptionOutput.h"
 #import <objc/runtime.h>
 #import <SSZipArchive/SSZipArchive.h>
 // #import <SSZipArchive.h>
@@ -222,41 +225,45 @@ TDDecryptionTaskOptions TDDecryptionTaskDefaultOptions(void) {
 }
 
 - (BOOL)decryptImageAtPath:(NSString *)imagePath forPID:(pid_t)pid outputPath:(NSString *)outputPath {
+    NSArray<TDMachOImage *> *sourceImages = TDInspectMachO(imagePath, nil);
+    if (!sourceImages.count) return NO;
+    BOOL encrypted = [sourceImages indexOfObjectPassingTest:^BOOL(TDMachOImage *image, NSUInteger idx, BOOL *stop) {
+        return image.encryption.cryptid != 0;
+    }] != NSNotFound;
+    if (!encrypted) return TDWriteDecryptionOutput(imagePath, outputPath, ^BOOL(NSString *stagedPath, NSError **attemptError) { return YES; }, nil);
     vm_map_t task = 0;
     if (task_for_pid(mach_task_self(), pid, &task)) {
         NSLog(@"failed to get task for pid %d", pid);
         return NO;
     }
 
-    MainImageInfo_t mainImageInfo = imageInfoForPIDWithRetry([imagePath UTF8String], task, pid);
-    if (!mainImageInfo.ok) {
-        NSLog(@"failed to get main image load address for pid %d", pid);
-        return NO;
+    @try {
+        MainImageInfo_t mainImageInfo = imageInfoForPIDWithRetry([imagePath UTF8String], task, pid);
+        if (!mainImageInfo.ok) {
+            NSLog(@"failed to get main image load address for pid %d", pid);
+            return NO;
+        }
+
+        NSLog(@"main image info: %@", NSStringFromMainImageInfo(mainImageInfo));
+
+        NSError *sliceError = nil;
+        NSData *loadedHeader = readLoadedImageHeader(task, mainImageInfo.loadAddress);
+        TDMachOImage *sourceImage = TDImageMatchingLoadedHeader(sourceImages, loadedHeader, &sliceError);
+        if (!sourceImage) {
+            NSLog(@"Cannot select the loaded slice for %@: %@", imagePath, sliceError);
+            return NO;
+        }
+        NSLog(@"Rebuilding loaded slice at file offset 0x%llx (%llu bytes): %@",
+            sourceImage.fileOffset, sourceImage.fileSize, imagePath);
+        BOOL success = TDWriteDecryptionOutput(imagePath, outputPath, ^BOOL(NSString *stagedPath, NSError **attemptError) {
+            return rebuildDecryptedImageAtPath(imagePath, task, mainImageInfo.loadAddress,
+                sourceImage, stagedPath, attemptError);
+        }, &sliceError);
+        if (!success) NSLog(@"Cannot decrypt loaded slice for %@: %@", imagePath, sliceError);
+        return success;
+    } @finally {
+        mach_port_deallocate(mach_task_self(), task);
     }
-
-    NSLog(@"main image info: %@", NSStringFromMainImageInfo(mainImageInfo));
-
-    struct encryption_info_command encryptionInfo = {0};
-    uint64_t loadCommandAddress = 0;
-    if (!readEncryptionInfo(task, mainImageInfo.loadAddress, &encryptionInfo, &loadCommandAddress)) {
-        NSLog(@"failed to read encryption info for pid %d", pid);
-        return NO;
-    }
-
-    NSLog(@"encryption info: cryptoff=0x%x cryptsize=0x%x cryptid=%d",
-          encryptionInfo.cryptoff, encryptionInfo.cryptsize, encryptionInfo.cryptid);
-    
-    if (encryptionInfo.cryptid == 0) {
-        NSLog(@"image is not encrypted");
-        return YES;
-    }
-
-    if (!rebuildDecryptedImageAtPath(imagePath, task, mainImageInfo.loadAddress, &encryptionInfo, loadCommandAddress, outputPath)) {
-        NSLog(@"failed to rebuild decrypted image for pid %d", pid);
-        return NO;
-    }
-
-    return YES;   
 }
 
 - (BOOL)_buildIPAWithName:(NSString *)ipaName {

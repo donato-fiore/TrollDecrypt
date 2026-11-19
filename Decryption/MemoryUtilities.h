@@ -15,13 +15,9 @@ NSString *NSStringFromMainImageInfo(MainImageInfo_t info);
 
 MainImageInfo_t imageInfoForPIDWithRetry(const char *sourcePath, vm_map_t task, pid_t pid);
 
-BOOL readEncryptionInfo(vm_map_t task, uint64_t address,
-                        struct encryption_info_command *encryptionInfo,
-                        uint64_t *loadCommandAddress);
+NSData *readLoadedImageHeader(vm_map_t task, uint64_t address);
 
-BOOL rebuildDecryptedImageAtPath(NSString *sourcePath,
-                                 vm_map_t task,
-                                 uint64_t loadAddress,
-                                 struct encryption_info_command *encryptionInfo,
-                                 uint64_t loadCommandAddress,
-                                 NSString *outputPath);
+@class TDMachOImage;
+BOOL rebuildDecryptedImageAtPath(NSString *sourcePath, vm_map_t task,
+                                 uint64_t loadAddress, TDMachOImage *image,
+                                 NSString *outputPath, NSError **error);

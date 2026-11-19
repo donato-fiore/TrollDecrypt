@@ -16,6 +16,18 @@ cd TrollDecrypt
 make package
 ```
 
+## FAT framework decryption
+
+For a FAT framework containing armv7/arm64 or multiple CPU subtypes, the output
+contains only the slice loaded by the target process. Its header and load commands
+must match the on-disk slice. Segment VM offsets are used to read decrypted pages;
+the encryption flag is cleared only after every read succeeds and the data differs
+from ciphertext and is nonzero. Failed attempts retain the previous output file.
+
+Run `sh Tests/run.sh` on macOS for FAT32/FAT64, byte-order, CPU subtype/UUID,
+VM-offset, Mach task read and failed-output regressions. Actual FairPlay decryption
+requires an installed app on a supported physical device.
+
 ## Credits / Thanks
 - [wh1te4ever](https://github.com/wh1te4ever) for TrollDecryptor
 - [opa334](https://github.com/opa334) for some pieces of code
