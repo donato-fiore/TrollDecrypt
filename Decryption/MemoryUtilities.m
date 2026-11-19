@@ -1,4 +1,6 @@
 #import "MemoryUtilities.h"
+#import <mach-o/fat.h>
+#import <libkern/OSByteOrder.h>
 
 #define MAX_DYLD_INFO_RETRIES 300
 #define DYLD_INFO_RETRY_DELAY_US 10000
@@ -243,7 +245,55 @@ BOOL rebuildDecryptedImageAtPath(NSString *sourcePath,
         return NO;
     }
 
-    lseek(fd, 0, SEEK_SET);
+    // FAT offsets are container-relative; cryptoff and load commands are slice-relative.
+    uint64_t sliceOffset = 0;
+    struct fat_header fatHeader;
+    if (pread(fd, &fatHeader, sizeof(fatHeader), 0) == sizeof(fatHeader) &&
+        (fatHeader.magic == FAT_MAGIC || fatHeader.magic == FAT_CIGAM ||
+         fatHeader.magic == FAT_MAGIC_64 || fatHeader.magic == FAT_CIGAM_64)) {
+        BOOL swap = fatHeader.magic == FAT_CIGAM || fatHeader.magic == FAT_CIGAM_64;
+        BOOL wide = fatHeader.magic == FAT_MAGIC_64 || fatHeader.magic == FAT_CIGAM_64;
+        uint32_t count = swap ? OSSwapInt32(fatHeader.nfat_arch) : fatHeader.nfat_arch;
+        size_t stride = wide ? sizeof(struct fat_arch_64) : sizeof(struct fat_arch);
+        struct mach_header loaded;
+        if (!count || count > ((uint64_t)fileSize - sizeof(fatHeader)) / stride ||
+            !readProcessMemory(task, loadAddress, &loaded, sizeof(loaded))) {
+            close(fd);
+            return NO;
+        }
+        uint64_t sliceSize = 0;
+        for (uint32_t i = 0; i < count; i++) {
+            uint64_t offset, size;
+            off_t entry = sizeof(fatHeader) + (uint64_t)i * stride;
+            if (wide) {
+                struct fat_arch_64 arch;
+                if (pread(fd, &arch, sizeof(arch), entry) != sizeof(arch)) { close(fd); return NO; }
+                offset = swap ? OSSwapInt64(arch.offset) : arch.offset;
+                size = swap ? OSSwapInt64(arch.size) : arch.size;
+            } else {
+                struct fat_arch arch;
+                if (pread(fd, &arch, sizeof(arch), entry) != sizeof(arch)) { close(fd); return NO; }
+                offset = swap ? OSSwapInt32(arch.offset) : arch.offset;
+                size = swap ? OSSwapInt32(arch.size) : arch.size;
+            }
+            if (offset < sizeof(fatHeader) + (uint64_t)count * stride ||
+                offset > (uint64_t)fileSize || size > (uint64_t)fileSize - offset || size < sizeof(loaded)) {
+                close(fd);
+                return NO;
+            }
+            struct mach_header candidate;
+            if (pread(fd, &candidate, sizeof(candidate), (off_t)offset) != sizeof(candidate)) { close(fd); return NO; }
+            if (candidate.magic == loaded.magic && candidate.cputype == loaded.cputype &&
+                candidate.cpusubtype == loaded.cpusubtype) {
+                if (sliceSize) { close(fd); return NO; } // Reject ambiguous architecture entries.
+                sliceOffset = offset;
+                sliceSize = size;
+            }
+        }
+        if (!sliceSize) { close(fd); return NO; }
+        fileSize = (off_t)sliceSize;
+    }
+    lseek(fd, (off_t)sliceOffset, SEEK_SET);
 
     uint64_t cryptEnd = (uint64_t)cryptoff + (uint64_t)cryptsize;
     if (cryptEnd > (uint64_t)fileSize) {
@@ -262,7 +312,7 @@ BOOL rebuildDecryptedImageAtPath(NSString *sourcePath,
     }
 
     // Leading [0, cryptoff)
-    if (lseek(fd, 0, SEEK_SET) < 0) {
+    if (lseek(fd, (off_t)sliceOffset, SEEK_SET) < 0) {
         NSLog(@"lseek set failed (%d)", errno);
         close(fd);
         close(outputFd);
@@ -338,7 +388,7 @@ BOOL rebuildDecryptedImageAtPath(NSString *sourcePath,
             return NO;
         }
 
-        if (lseek(fd, (off_t)cryptEnd, SEEK_SET) < 0) {
+        if (lseek(fd, (off_t)(sliceOffset + cryptEnd), SEEK_SET) < 0) {
             NSLog(@"lseek to trailing failed (%d)", errno);
             free(buf);
             close(fd);
